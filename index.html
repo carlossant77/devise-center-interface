@@ -1151,6 +1151,16 @@ let state = {
   selectedProfilePic: null,
 };
 
+// ─── HELPER: Escape HTML to prevent XSS ───
+function esc(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // ─── HELPER: API request with error handling ───
 async function apiRequest(path, options = {}) {
   const headers = { ...(options.headers || {}) };
@@ -1170,11 +1180,18 @@ async function apiRequest(path, options = {}) {
   return res;
 }
 
-// Parse error message from API response
+// Parse error message from API response safely
 async function parseErrorMessage(res, fallback = 'Ocorreu um erro. Tente novamente.') {
   try {
-    const data = await res.json();
-    return data.message || data.error || data.detail || fallback;
+    const text = await res.clone().text();
+    if (!text) return fallback;
+    try {
+      const data = JSON.parse(text);
+      return data.message || data.error || data.detail || fallback;
+    } catch {
+      // Response was plain text, not JSON
+      return text.length < 200 ? text : fallback;
+    }
   } catch {
     return fallback;
   }
@@ -1255,9 +1272,16 @@ async function handleLogin(e) {
       );
       throw new Error(msg);
     }
-    const data = await res.json();
-    // API returns token directly or nested
-    state.token = data.token || data.accessToken || data;
+    // API returns the JWT token as plain text, not JSON
+    const contentType = res.headers.get('content-type') || '';
+    let token;
+    if (contentType.includes('application/json')) {
+      const data = await res.json();
+      token = data.token || data.accessToken || data;
+    } else {
+      token = await res.text();
+    }
+    state.token = token.trim();
     localStorage.setItem('dc_token', state.token);
     await fetchCurrentUser(username);
     enterApp();
@@ -1322,10 +1346,10 @@ async function handleRegister(e) {
 // After login, find the user object by username
 async function fetchCurrentUser(username) {
   try {
-    const res = await fetch(`${API}/users`);
+    const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
+    const res = await fetch(`${API}/users`, { headers });
     if (!res.ok) throw new Error();
     const users = await res.json();
-    // API may return array or nested object
     const list = Array.isArray(users) ? users : (users.content || users.data || []);
     const found = list.find(u => u.username === username);
     if (found) {
@@ -1347,9 +1371,13 @@ function enterApp() {
   if (state.user) {
     document.getElementById('logout-btn').style.display = '';
     document.getElementById('new-post-btn').style.opacity = '1';
-    document.getElementById('new-post-btn').style.pointerEvents = '';
+    document.getElementById('new-post-btn').style.pointerEvents = 'auto';
+    document.getElementById('new-post-btn').title = '';
   } else {
     document.getElementById('logout-btn').style.display = 'none';
+    document.getElementById('new-post-btn').style.opacity = '0.5';
+    document.getElementById('new-post-btn').style.pointerEvents = 'auto'; // still clickable, will prompt login
+    document.getElementById('new-post-btn').title = 'Faça login para publicar';
   }
   showPage('home');
 }
@@ -1384,7 +1412,7 @@ function updateSidebarUser() {
     nameEl.textContent = u.username;
     emailEl.textContent = u.email || '';
     if (u.profilePicture) {
-      avatarEl.innerHTML = `<img src="${u.profilePicture}" alt="${u.username}">`;
+      avatarEl.innerHTML = `<img src="${esc(u.profilePicture)}" alt="${esc(u.username)}">`;
     } else {
       avatarEl.textContent = u.username.charAt(0).toUpperCase();
     }
@@ -1450,7 +1478,7 @@ function renderPostCard(p) {
   const isOwn = state.user && (state.user.id === p.userId || state.user.username === p.author);
   const initials = p.author ? p.author.charAt(0).toUpperCase() : '?';
   const avatarHtml = p.authorPicture
-    ? `<img src="${p.authorPicture}" alt="${p.author}">`
+    ? `<img src="${esc(p.authorPicture)}" alt="${esc(p.author)}">`
     : initials;
   const timeStr = p.createdAt ? new Date(p.createdAt).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' }) : '';
   const optionsMenu = isOwn ? `
@@ -1467,20 +1495,21 @@ function renderPostCard(p) {
         </div>
       </div>
     </div>` : '';
-  const imageHtml = p.imageUrl ? `<img src="${p.imageUrl}" alt="" class="post-image" onerror="this.style.display='none'">` : '';
+  const imageHtml = p.imageUrl ? `<img src="${esc(p.imageUrl)}" alt="" class="post-image" onerror="this.style.display='none'">` : '';
+  const contentPreview = esc((p.content || '').slice(0, 300)) + ((p.content||'').length > 300 ? '...' : '');
   return `
     <div class="post-card" id="pcard-${p.id}">
       <div class="post-header">
-        <div class="post-avatar" onclick="viewUserProfile(event, '${p.author}')" style="cursor:pointer" title="Ver perfil de ${p.author}">${avatarHtml}</div>
+        <div class="post-avatar" onclick="viewUserProfile(event, '${esc(p.author)}')" style="cursor:pointer" title="Ver perfil de ${esc(p.author)}">${avatarHtml}</div>
         <div class="post-meta">
-          <div class="post-author" onclick="viewUserProfile(event, '${p.author}')" style="cursor:pointer">${p.author || 'Usuário'}</div>
+          <div class="post-author" onclick="viewUserProfile(event, '${esc(p.author)}')" style="cursor:pointer">${esc(p.author) || 'Usuário'}</div>
           <div class="post-time">${timeStr}</div>
         </div>
         ${optionsMenu}
       </div>
-      ${p.title ? `<div class="post-title" onclick="openPost(${p.id})">${p.title}</div>` : ''}
+      ${p.title ? `<div class="post-title" onclick="openPost(${p.id})">${esc(p.title)}</div>` : ''}
       ${imageHtml}
-      <div class="post-body" onclick="openPost(${p.id})">${(p.content || '').slice(0, 300)}${(p.content||'').length > 300 ? '...' : ''}</div>
+      <div class="post-body" onclick="openPost(${p.id})">${contentPreview}</div>
       <div class="post-footer">
         <button class="post-action" onclick="openPost(${p.id})">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -1529,14 +1558,14 @@ async function openPost(id) {
     const comments = Array.isArray(commentsRaw) ? commentsRaw : (commentsRaw.content || []);
 
     const isOwn = state.user && (state.user.id === post.userId || state.user.username === post.author);
-    const imgHtml = post.imageUrl ? `<img src="${post.imageUrl}" alt="" class="post-image" onerror="this.style.display='none'">` : '';
+    const imgHtml = post.imageUrl ? `<img src="${esc(post.imageUrl)}" alt="" class="post-image" onerror="this.style.display='none'">` : '';
     const avatarInit = (post.author||'?').charAt(0).toUpperCase();
     container.innerHTML = `
       <div class="post-detail-card">
         <div class="post-header" style="margin-bottom:20px">
-          <div class="post-avatar" onclick="viewUserProfile(event,'${post.author}')" style="cursor:pointer">${post.authorPicture ? `<img src="${post.authorPicture}">` : avatarInit}</div>
+          <div class="post-avatar" onclick="viewUserProfile(event,'${esc(post.author)}')" style="cursor:pointer">${post.authorPicture ? `<img src="${esc(post.authorPicture)}">` : avatarInit}</div>
           <div class="post-meta">
-            <div class="post-author" onclick="viewUserProfile(event,'${post.author}')" style="cursor:pointer">${post.author||'Usuário'}</div>
+            <div class="post-author" onclick="viewUserProfile(event,'${esc(post.author)}')" style="cursor:pointer">${esc(post.author)||'Usuário'}</div>
             <div class="post-time">${post.createdAt ? new Date(post.createdAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}) : ''}</div>
           </div>
           ${isOwn ? `<div style="display:flex;gap:8px">
@@ -1544,9 +1573,9 @@ async function openPost(id) {
             <button class="btn-danger" onclick="deletePost(${post.id})">Excluir</button>
           </div>` : ''}
         </div>
-        ${post.title ? `<div class="post-detail-title">${post.title}</div>` : ''}
+        ${post.title ? `<div class="post-detail-title">${esc(post.title)}</div>` : ''}
         ${imgHtml}
-        <div class="post-detail-body">${post.content||''}</div>
+        <div class="post-detail-body">${esc(post.content||'')}</div>
       </div>`;
 
     const authPrompt = !state.user ? `<div style="background:var(--navy-ghost);border-radius:var(--radius-md);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px"><span style="font-size:.85rem;color:var(--text-secondary)">Faça login para comentar</span><button class="btn-primary" style="padding:8px 16px;font-size:.8rem;white-space:nowrap" onclick="switchToAuth()">Entrar</button></div>` : '';
@@ -1595,18 +1624,18 @@ async function renderComments(comments) {
 function renderCommentCard(c) {
   const isOwn = state.user && (state.user.id === c.userId || state.user.username === c.author);
   const initials = (c.author||'?').charAt(0).toUpperCase();
-  const avatarHtml = c.authorPicture ? `<img src="${c.authorPicture}">` : initials;
-  const replies = (c.replies||[]).map(r => {
+  const avatarHtml = c.authorPicture ? `<img src="${esc(c.authorPicture)}">` : initials;
+  const repliesHtml = (c.replies||[]).map(r => {
     const ri = (r.author||'?').charAt(0).toUpperCase();
-    const ra = r.authorPicture ? `<img src="${r.authorPicture}">` : ri;
+    const ra = r.authorPicture ? `<img src="${esc(r.authorPicture)}">` : ri;
     const isOwnR = state.user && (state.user.username === r.author || state.user.id === r.userId);
     return `<div class="reply-card">
       <div class="comment-header">
         <div class="comment-avatar">${ra}</div>
-        <div><div class="comment-author">${r.author||'Usuário'}</div><div class="comment-time">${r.createdAt ? new Date(r.createdAt).toLocaleDateString('pt-BR') : ''}</div></div>
+        <div><div class="comment-author">${esc(r.author)||'Usuário'}</div><div class="comment-time">${r.createdAt ? new Date(r.createdAt).toLocaleDateString('pt-BR') : ''}</div></div>
         ${isOwnR ? `<button class="btn-danger" style="margin-left:auto;padding:5px 10px;font-size:.72rem" onclick="deleteComment(${r.id})">Excluir</button>` : ''}
       </div>
-      <div class="comment-body">${r.content||''}</div>
+      <div class="comment-body">${esc(r.content)}</div>
     </div>`;
   }).join('');
   const replyBtn = state.user ? `<button class="comment-reply-btn" onclick="toggleReplyForm(${c.id})">↩ Responder</button>` : '';
@@ -1618,18 +1647,19 @@ function renderCommentCard(c) {
         <button class="btn-primary" style="padding:7px 14px;font-size:.8rem" onclick="submitReply(${c.id})">Responder</button>
       </div>
     </div>` : '';
-  const repliesHtml = replies ? `<div class="replies-container">${replies}</div>` : '';
+  // Fix: check length, not truthiness of string (empty string is still truthy!)
+  const repliesContainer = repliesHtml.length > 0 ? `<div class="replies-container">${repliesHtml}</div>` : '';
   return `
     <div class="comment-card" id="comment-${c.id}">
       <div class="comment-header">
         <div class="comment-avatar">${avatarHtml}</div>
-        <div style="flex:1"><div class="comment-author">${c.author||'Usuário'}</div><div class="comment-time">${c.createdAt ? new Date(c.createdAt).toLocaleDateString('pt-BR') : ''}</div></div>
+        <div style="flex:1"><div class="comment-author">${esc(c.author)||'Usuário'}</div><div class="comment-time">${c.createdAt ? new Date(c.createdAt).toLocaleDateString('pt-BR') : ''}</div></div>
         ${isOwn ? `<button class="btn-danger" style="padding:5px 10px;font-size:.72rem" onclick="deleteComment(${c.id})">Excluir</button>` : ''}
       </div>
-      <div class="comment-body">${c.content||''}</div>
+      <div class="comment-body">${esc(c.content)}</div>
       ${replyBtn}
       ${replyForm}
-      ${repliesHtml}
+      ${repliesContainer}
     </div>`;
 }
 
@@ -1897,6 +1927,7 @@ async function loadProfile(userId, isOwn) {
 
 function openPostFromProfile(id) {
   state.currentPostId = id;
+  showPage('post'); // must come before openPost so the DOM containers exist
   openPost(id);
 }
 
