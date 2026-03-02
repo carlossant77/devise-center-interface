@@ -861,6 +861,7 @@ async function deletePost(id) {
 
 // ─── PROFILE ───
 async function loadProfile(userId, isOwn) {
+  console.log("LOAD PROFILE USER ID:", userId);
   const container = document.getElementById("profile-content");
   container.innerHTML = `
     <div class="loading-skeleton" style="margin-bottom:20px">
