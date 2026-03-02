@@ -381,13 +381,13 @@ function renderPostCard(p) {
   const optionsMenu = isOwn
     ? `
     <div style="position:relative">
-      <button class="post-options" onclick="toggleDropdown(event, 'dd-${p.postId}')">⋯</button>
-      <div class="dropdown-menu" id="dd-${p.postId}">
+      <button class="post-options" onclick="toggleDropdown(event, dd-'${p.postId}')">⋯</button>
+      <div class="dropdown-menu" id="dd-'${p.postId}'">
         <div class="dropdown-item" onclick="openEditModal('${p.postId}')">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8z"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           Editar
         </div>
-        <div class="dropdown-item danger" onclick="deletePost('${p.postId})'">
+        <div class="dropdown-item danger" onclick="deletePost('${p.postId}')">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
           Excluir
         </div>
@@ -490,7 +490,7 @@ async function openPost(id) {
             isOwn
               ? `<div style="display:flex;gap:8px">
             <button class="btn-ghost" style="padding:8px 14px;font-size:.8rem" onclick="openEditModal('${post.postId}')">Editar</button>
-            <button class="btn-danger" onclick="deletePost(${post.id})">Excluir</button>
+            <button class="btn-danger" onclick="deletePost('${post.postId}')">Excluir</button>
           </div>`
               : ""
           }
@@ -539,7 +539,7 @@ async function renderComments(comments) {
   const withReplies = await Promise.all(
     comments.map(async (c) => {
       try {
-        const r = await fetch(`${API}/comments/${c.id}/replies`);
+        const r = await fetch(`${API}/comments/${c.commentId}/replies`);
         if (!r.ok) return { ...c, replies: [] };
         const raw = await r.json();
         return { ...c, replies: Array.isArray(raw) ? raw : raw.content || [] };
@@ -556,13 +556,13 @@ function renderCommentCard(c) {
     state.user &&
     (state.user.userId === c.userId || state.user.username === c.author);
   const initials = (c.author || "?").charAt(0).toUpperCase();
-  const avatarHtml = c.authorPicture
-    ? `<img src="${esc(c.authorPicture)}">`
+  const avatarHtml = c.profileImgUrl
+    ? `<img src="${esc(c.profileImgUrl)}">`
     : initials;
   const repliesHtml = (c.replies || [])
     .map((r) => {
       const ri = (r.author || "?").charAt(0).toUpperCase();
-      const ra = r.authorPicture ? `<img src="${esc(r.authorPicture)}">` : ri;
+      const ra = r.profileImgUrl ? `<img src="${esc(r.profileImgUrl)}">` : ri;
       const isOwnR =
         state.user &&
         (state.user.username === r.author || state.user.userId === r.userId);
@@ -570,22 +570,22 @@ function renderCommentCard(c) {
       <div class="comment-header">
         <div class="comment-avatar">${ra}</div>
         <div><div class="comment-author">${esc(r.author) || "Usuário"}</div><div class="comment-time">${r.createdAt ? new Date(r.createdAt).toLocaleDateString("pt-BR") : ""}</div></div>
-        ${isOwnR ? `<button class="btn-danger" style="margin-left:auto;padding:5px 10px;font-size:.72rem" onclick="deleteComment(${r.id})">Excluir</button>` : ""}
+        ${isOwnR ? `<button class="btn-danger" style="margin-left:auto;padding:5px 10px;font-size:.72rem" onclick="deleteComment('${r.commentId}')">Excluir</button>` : ""}
       </div>
       <div class="comment-body">${esc(r.content)}</div>
     </div>`;
     })
     .join("");
   const replyBtn = state.user
-    ? `<button class="comment-reply-btn" onclick="toggleReplyForm(${c.id})">↩ Responder</button>`
+    ? `<button class="comment-reply-btn" onclick="toggleReplyForm('${c.commentId}')">↩ Responder</button>`
     : "";
   const replyForm = state.user
     ? `
-    <div class="reply-form" id="reply-form-${c.id}" style="display:none">
-      <textarea class="reply-input" id="reply-input-${c.id}" placeholder="Escreva uma resposta..."></textarea>
+    <div class="reply-form" id="reply-form-'${c.commentId}'" style="display:none">
+      <textarea class="reply-input" id="reply-input-'${c.commentId}'" placeholder="Escreva uma resposta..."></textarea>
       <div class="reply-form-footer">
-        <button class="btn-ghost" style="padding:7px 14px;font-size:.8rem" onclick="toggleReplyForm(${c.id})">Cancelar</button>
-        <button class="btn-primary" style="padding:7px 14px;font-size:.8rem" onclick="submitReply(${c.id})">Responder</button>
+        <button class="btn-ghost" style="padding:7px 14px;font-size:.8rem" onclick="toggleReplyForm('${c.commentId}')">Cancelar</button>
+        <button class="btn-primary" style="padding:7px 14px;font-size:.8rem" onclick="submitReply('${c.commentId}')">Responder</button>
       </div>
     </div>`
     : "";
@@ -595,11 +595,11 @@ function renderCommentCard(c) {
       ? `<div class="replies-container">${repliesHtml}</div>`
       : "";
   return `
-    <div class="comment-card" id="comment-${c.id}">
+    <div class="comment-card" id="comment-'${c.commentId}'">
       <div class="comment-header">
         <div class="comment-avatar">${avatarHtml}</div>
         <div style="flex:1"><div class="comment-author">${esc(c.author) || "Usuário"}</div><div class="comment-time">${c.createdAt ? new Date(c.createdAt).toLocaleDateString("pt-BR") : ""}</div></div>
-        ${isOwn ? `<button class="btn-danger" style="padding:5px 10px;font-size:.72rem" onclick="deleteComment(${c.id})">Excluir</button>` : ""}
+        ${isOwn ? `<button class="btn-danger" style="padding:5px 10px;font-size:.72rem" onclick="deleteComment('${c.commentId}')">Excluir</button>` : ""}
       </div>
       <div class="comment-body">${esc(c.content)}</div>
       ${replyBtn}
@@ -655,7 +655,7 @@ async function submitComment() {
 
 async function submitReply(commentId) {
   if (!state.user) return;
-  const input = document.getElementById(`reply-input-${commentId}`);
+  const input = document.getElementById(`reply-input-'${commentId}'`);
   const content = input.value.trim();
   if (!content) {
     showToast("Escreva algo antes de responder.", "info");
@@ -797,7 +797,7 @@ async function submitNewPost() {
 // ─── EDIT POST ──
 async function openEditModal(id) {
   // Try to find in state first, fallback to API
-  let post = state.posts.find((p) => p.id === id);
+  let post = state.posts.find((p) => p.postId === id);
   if (!post) {
     try {
       const res = await fetch(`${API}/posts/${id}`);
@@ -985,12 +985,12 @@ async function loadProfile(userId, isOwn) {
       grid.innerHTML = userPosts
         .map((p) => {
           if (p.imageUrl) {
-            return `<div class="profile-grid-item" onclick="openPostFromProfile(${p.id})" title="${p.title || ""}">
+            return `<div class="profile-grid-item" onclick="openPostFromProfile('${p.postId}')" title="${p.title || ""}">
             <img src="${p.imageUrl}" alt="" onerror="this.style.display='none'">
             <div class="profile-grid-item-content"><div class="profile-grid-item-title">${p.title || ""}</div></div>
           </div>`;
           }
-          return `<div class="profile-grid-item" onclick="openPostFromProfile(${p.id})" style="background:var(--navy-ghost)" title="${p.title || ""}">
+          return `<div class="profile-grid-item" onclick="openPostFromProfile('${p.postId}')" style="background:var(--navy-ghost)" title="${p.title || ""}">
           <div class="profile-grid-item-text"><p>${p.title || p.content || ""}</p></div>
         </div>`;
         })
@@ -1001,7 +1001,7 @@ async function loadProfile(userId, isOwn) {
       <div class="empty-feed">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <p>${err.message}</p>
-        <button class="btn-ghost" style="margin-top:16px;padding:9px 20px;font-size:.83rem" onclick="loadProfile(${userId},${isOwn})">Tentar novamente</button>
+        <button class="btn-ghost" style="margin-top:16px;padding:9px 20px;font-size:.83rem" onclick="loadProfile('${userId}',${isOwn})">Tentar novamente</button>
       </div>`;
   }
 }
@@ -1025,7 +1025,7 @@ async function viewUserProfile(e, username) {
       return;
     }
     const isOwn = state.user && state.user.username === username;
-    state.profileUserId = found.id;
+    state.profileUserId = found.userId;
     if (isOwn) showPage("profile-own");
     else showPage("profile-other");
   } catch {
