@@ -240,8 +240,9 @@ async function fetchCurrentUser() {
   const res = await apiRequest("/users/me");
   if (!res.ok) throw new Error();
   const user = await res.json();
+  console.log(user);
 
-  if (!user || !user.id) {
+  if (!user || !user.userId) {
     throw new Error("Usuário inválido retornado pelo backend.");
   }
 
