@@ -1,2035 +1,352 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Devise Center</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --navy: #1E3A5F;
-    --navy-mid: #2a4f80;
-    --navy-light: #3a6fa8;
-    --navy-ghost: #e8eef5;
-    --navy-mist: #f4f7fb;
-    --white: #ffffff;
-    --text-primary: #0f1f33;
-    --text-secondary: #5a7090;
-    --text-muted: #9ab0c8;
-    --border: #dce8f5;
-    --border-soft: #eef4fc;
-    --sidebar-w: 240px;
-    --sidebar-collapsed: 64px;
-    --radius-sm: 8px;
-    --radius-md: 14px;
-    --radius-lg: 20px;
-    --radius-full: 999px;
-    --shadow-card: 0 2px 12px rgba(30,58,95,0.07);
-    --shadow-hover: 0 6px 24px rgba(30,58,95,0.13);
-    --transition: all 0.22s cubic-bezier(.4,0,.2,1);
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Sora', sans-serif;
-    background: var(--navy-mist);
-    color: var(--text-primary);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── VIEWS ── */
-  .view { display: none; }
-  .view.active { display: flex; }
-
-  /* ══════════════════════════════
-     AUTH VIEW
-  ══════════════════════════════ */
-  #view-auth {
-    min-height: 100vh;
-    align-items: stretch;
-  }
-
-  .auth-left {
-    flex: 1;
-    background: var(--navy);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 48px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .auth-left::before {
-    content: '';
-    position: absolute;
-    width: 420px; height: 420px;
-    border-radius: 50%;
-    border: 60px solid rgba(255,255,255,0.05);
-    top: -100px; right: -140px;
-  }
-  .auth-left::after {
-    content: '';
-    position: absolute;
-    width: 280px; height: 280px;
-    border-radius: 50%;
-    border: 40px solid rgba(255,255,255,0.04);
-    bottom: -80px; left: -80px;
-  }
-
-  .auth-brand {
-    text-align: center;
-    color: white;
-    position: relative; z-index: 1;
-  }
-  .auth-brand-icon {
-    width: 64px; height: 64px;
-    background: rgba(255,255,255,0.12);
-    border-radius: var(--radius-md);
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 24px;
-    font-size: 28px;
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.18);
-  }
-  .auth-brand h1 {
-    font-family: 'Lora', serif;
-    font-size: 2rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    margin-bottom: 12px;
-  }
-  .auth-brand p {
-    font-size: 0.9rem;
-    color: rgba(255,255,255,0.6);
-    line-height: 1.6;
-    max-width: 280px;
-  }
-
-  .auth-right {
-    width: 480px;
-    background: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 56px 52px;
-  }
-
-  .auth-tabs {
-    display: flex;
-    gap: 0;
-    border-bottom: 2px solid var(--border);
-    margin-bottom: 36px;
-  }
-  .auth-tab {
-    flex: 1;
-    padding: 12px;
-    text-align: center;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
-    transition: var(--transition);
-  }
-  .auth-tab.active {
-    color: var(--navy);
-    border-bottom-color: var(--navy);
-  }
-
-  .auth-form { display: none; flex-direction: column; gap: 16px; }
-  .auth-form.active { display: flex; }
-
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group label {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  .form-group input {
-    padding: 12px 16px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-family: 'Sora', sans-serif;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    transition: var(--transition);
-    outline: none;
-    background: var(--navy-mist);
-  }
-  .form-group input:focus {
-    border-color: var(--navy);
-    background: white;
-    box-shadow: 0 0 0 3px rgba(30,58,95,0.08);
-  }
-
-  .btn-primary {
-    padding: 13px 24px;
-    background: var(--navy);
-    color: white;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-family: 'Sora', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .btn-primary:hover { background: var(--navy-mid); transform: translateY(-1px); box-shadow: var(--shadow-hover); }
-
-  .btn-ghost {
-    padding: 11px 20px;
-    background: transparent;
-    color: var(--navy);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-family: 'Sora', sans-serif;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: var(--transition);
-  }
-  .btn-ghost:hover { border-color: var(--navy); background: var(--navy-ghost); }
-
-  .btn-danger {
-    padding: 9px 16px;
-    background: #fee2e2;
-    color: #b91c1c;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-family: 'Sora', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-  }
-  .btn-danger:hover { background: #fecaca; }
-
-  .error-msg {
-    font-size: 0.8rem;
-    color: #dc2626;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    display: none;
-  }
-  .error-msg.show { display: block; }
-
-  .auth-skip {
-    text-align: center;
-    margin-top: 20px;
-  }
-  .auth-skip a {
-    font-size: 0.83rem;
-    color: var(--text-secondary);
-    text-decoration: none;
-    transition: var(--transition);
-  }
-  .auth-skip a:hover { color: var(--navy); }
-  .auth-skip a span { font-weight: 600; color: var(--navy); }
-
-  /* ══════════════════════════════
-     APP LAYOUT
-  ══════════════════════════════ */
-  #view-app {
-    min-height: 100vh;
-    flex-direction: row;
-  }
-
-  /* ── SIDEBAR ── */
-  .sidebar {
-    width: var(--sidebar-w);
-    min-height: 100vh;
-    background: white;
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 0; left: 0;
-    z-index: 100;
-    transition: width 0.28s cubic-bezier(.4,0,.2,1);
-    overflow: hidden;
-  }
-  .sidebar.collapsed { width: var(--sidebar-collapsed); }
-
-  .sidebar-header {
-    padding: 20px 16px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-bottom: 1px solid var(--border-soft);
-    min-height: 68px;
-  }
-  .sidebar-logo {
-    width: 36px; height: 36px;
-    background: var(--navy);
-    border-radius: var(--radius-sm);
-    display: flex; align-items: center; justify-content: center;
-    color: white;
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-  .sidebar-title {
-    font-family: 'Lora', serif;
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: var(--navy);
-    white-space: nowrap;
-    overflow: hidden;
-    transition: opacity 0.2s, width 0.2s;
-  }
-  .sidebar.collapsed .sidebar-title { opacity: 0; width: 0; }
-
-  .sidebar-toggle {
-    margin-left: auto;
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    border: 1.5px solid var(--border);
-    background: white;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px;
-    color: var(--text-secondary);
-    transition: var(--transition);
-    flex-shrink: 0;
-  }
-  .sidebar-toggle:hover { background: var(--navy-ghost); color: var(--navy); border-color: var(--navy); }
-  .sidebar.collapsed .sidebar-toggle { transform: rotate(180deg); }
-
-  .sidebar-nav {
-    flex: 1;
-    padding: 16px 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    overflow: hidden;
-  }
-
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 11px 12px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: var(--transition);
-    white-space: nowrap;
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-decoration: none;
-  }
-  .nav-item:hover { background: var(--navy-ghost); color: var(--navy); }
-  .nav-item.active { background: var(--navy-ghost); color: var(--navy); font-weight: 600; }
-  .nav-item svg { width: 20px; height: 20px; flex-shrink: 0; }
-  .nav-item span { overflow: hidden; transition: opacity 0.2s; }
-  .sidebar.collapsed .nav-item span { opacity: 0; width: 0; }
-  .sidebar.collapsed .nav-item { justify-content: center; padding: 11px; }
-
-  .sidebar-footer {
-    padding: 12px 10px;
-    border-top: 1px solid var(--border-soft);
-  }
-  .sidebar-user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: var(--transition);
-  }
-  .sidebar-user:hover { background: var(--navy-ghost); }
-  .sidebar-avatar {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: var(--navy);
-    color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.8rem;
-    font-weight: 700;
-    flex-shrink: 0;
-    overflow: hidden;
-  }
-  .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .sidebar-user-info { overflow: hidden; transition: opacity 0.2s; }
-  .sidebar.collapsed .sidebar-user-info { opacity: 0; width: 0; }
-  .sidebar-username { font-size: 0.83rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; }
-  .sidebar-email { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
-
-  .sidebar.collapsed .sidebar-user { justify-content: center; padding: 10px; }
-
-  /* ── MAIN CONTENT ── */
-  .main-content {
-    margin-left: var(--sidebar-w);
-    flex: 1;
-    min-height: 100vh;
-    transition: margin-left 0.28s cubic-bezier(.4,0,.2,1);
-  }
-  .main-content.sidebar-collapsed { margin-left: var(--sidebar-collapsed); }
-
-  /* ── TOP BAR ── */
-  .topbar {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: rgba(255,255,255,0.9);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .topbar-title {
-    font-family: 'Lora', serif;
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: var(--navy);
-  }
-  .search-bar {
-    flex: 1;
-    max-width: 380px;
-    position: relative;
-    margin-left: auto;
-  }
-  .search-bar input {
-    width: 100%;
-    padding: 9px 16px 9px 40px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-full);
-    font-family: 'Sora', sans-serif;
-    font-size: 0.85rem;
-    background: var(--navy-mist);
-    outline: none;
-    transition: var(--transition);
-  }
-  .search-bar input:focus { border-color: var(--navy); background: white; box-shadow: 0 0 0 3px rgba(30,58,95,0.07); }
-  .search-icon {
-    position: absolute;
-    left: 14px; top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-muted);
-    width: 16px; height: 16px;
-  }
-  .topbar-actions { display: flex; align-items: center; gap: 10px; }
-  .btn-new-post {
-    padding: 9px 18px;
-    background: var(--navy);
-    color: white;
-    border: none;
-    border-radius: var(--radius-full);
-    font-family: 'Sora', sans-serif;
-    font-size: 0.83rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex; align-items: center; gap: 6px;
-    white-space: nowrap;
-  }
-  .btn-new-post:hover { background: var(--navy-mid); transform: translateY(-1px); }
-
-  /* ── PAGES ── */
-  .page { display: none; }
-  .page.active { display: block; }
-
-  .page-content { padding: 32px; max-width: 680px; margin: 0 auto; }
-  .page-content-wide { padding: 32px; max-width: 960px; margin: 0 auto; }
-
-  /* ── FEED ── */
-  .feed { display: flex; flex-direction: column; gap: 20px; }
-
-  .post-card {
-    background: white;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-soft);
-    padding: 24px;
-    transition: var(--transition);
-    cursor: pointer;
-    box-shadow: var(--shadow-card);
-  }
-  .post-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); border-color: var(--border); }
-
-  .post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-  .post-avatar {
-    width: 42px; height: 42px;
-    border-radius: 50%;
-    background: var(--navy);
-    color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.85rem;
-    font-weight: 700;
-    flex-shrink: 0;
-    overflow: hidden;
-  }
-  .post-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .post-meta { flex: 1; }
-  .post-author { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
-  .post-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 1px; }
-  .post-options {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    color: var(--text-muted);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-    transition: var(--transition);
-    position: relative;
-  }
-  .post-options:hover { background: var(--navy-ghost); color: var(--navy); }
-
-  .dropdown-menu {
-    position: absolute;
-    right: 0; top: 38px;
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-hover);
-    min-width: 140px;
-    overflow: hidden;
-    z-index: 200;
-    display: none;
-  }
-  .dropdown-menu.open { display: block; }
-  .dropdown-item {
-    padding: 10px 16px;
-    font-size: 0.83rem;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex; align-items: center; gap: 8px;
-  }
-  .dropdown-item:hover { background: var(--navy-ghost); }
-  .dropdown-item.danger { color: #dc2626; }
-  .dropdown-item.danger:hover { background: #fef2f2; }
-
-  .post-title { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; line-height: 1.4; }
-  .post-body { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px; }
-  .post-image {
-    width: 100%;
-    border-radius: var(--radius-md);
-    margin-bottom: 16px;
-    max-height: 320px;
-    object-fit: cover;
-    border: 1px solid var(--border-soft);
-  }
-  .post-footer { display: flex; align-items: center; gap: 16px; padding-top: 14px; border-top: 1px solid var(--border-soft); }
-  .post-action {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 6px 10px;
-    border-radius: var(--radius-full);
-    transition: var(--transition);
-    border: none;
-    background: transparent;
-    font-family: 'Sora', sans-serif;
-  }
-  .post-action:hover { background: var(--navy-ghost); color: var(--navy); }
-  .post-action svg { width: 16px; height: 16px; }
-
-  .empty-feed {
-    text-align: center;
-    padding: 60px 24px;
-    color: var(--text-muted);
-  }
-  .empty-feed svg { width: 48px; height: 48px; margin: 0 auto 16px; opacity: 0.4; display: block; }
-  .empty-feed p { font-size: 0.9rem; }
-
-  .loading-skeleton {
-    background: white;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-soft);
-    padding: 24px;
-    display: flex; flex-direction: column; gap: 12px;
-  }
-  .skel { background: linear-gradient(90deg, var(--navy-ghost) 25%, var(--border-soft) 50%, var(--navy-ghost) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.4s infinite;
-    border-radius: 6px;
-  }
-  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .skel-header { display: flex; gap: 12px; align-items: center; }
-  .skel-circle { width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0; }
-  .skel-lines { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-
-  /* ── POST DETAIL ── */
-  .back-btn {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);
-    cursor: pointer; padding: 8px 0; margin-bottom: 20px;
-    border: none; background: none;
-    font-family: 'Sora', sans-serif;
-    transition: var(--transition);
-  }
-  .back-btn:hover { color: var(--navy); }
-
-  .post-detail-card {
-    background: white;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-soft);
-    padding: 28px;
-    box-shadow: var(--shadow-card);
-    margin-bottom: 24px;
-  }
-  .post-detail-title { font-family: 'Lora', serif; font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; line-height: 1.4; }
-  .post-detail-body { font-size: 0.93rem; color: var(--text-secondary); line-height: 1.8; }
-
-  .comments-section h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; }
-
-  .comment-form {
-    background: white;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-soft);
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: var(--shadow-card);
-  }
-  .comment-input {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-family: 'Sora', sans-serif;
-    font-size: 0.88rem;
-    resize: none;
-    outline: none;
-    transition: var(--transition);
-    min-height: 80px;
-    color: var(--text-primary);
-    background: var(--navy-mist);
-  }
-  .comment-input:focus { border-color: var(--navy); background: white; box-shadow: 0 0 0 3px rgba(30,58,95,0.07); }
-  .comment-form-footer { display: flex; justify-content: flex-end; margin-top: 12px; }
-
-  .comment-card {
-    background: white;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-soft);
-    padding: 18px;
-    margin-bottom: 12px;
-    box-shadow: var(--shadow-card);
-  }
-  .comment-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .comment-avatar {
-    width: 34px; height: 34px;
-    border-radius: 50%;
-    background: var(--navy);
-    color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 700;
-    overflow: hidden;
-  }
-  .comment-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .comment-author { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
-  .comment-time { font-size: 0.72rem; color: var(--text-muted); }
-  .comment-body { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.65; }
-  .comment-reply-btn {
-    font-size: 0.75rem; font-weight: 600; color: var(--navy);
-    background: none; border: none; cursor: pointer; margin-top: 8px;
-    font-family: 'Sora', sans-serif; transition: var(--transition); padding: 0;
-  }
-  .comment-reply-btn:hover { color: var(--navy-mid); text-decoration: underline; }
-
-  .replies-container { margin-top: 12px; padding-left: 16px; border-left: 2px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
-  .reply-card {
-    background: var(--navy-mist);
-    border-radius: var(--radius-sm);
-    padding: 14px;
-  }
-
-  .reply-form { margin-top: 10px; }
-  .reply-input {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-family: 'Sora', sans-serif;
-    font-size: 0.83rem;
-    resize: none;
-    outline: none;
-    transition: var(--transition);
-    min-height: 60px;
-    background: var(--navy-mist);
-  }
-  .reply-input:focus { border-color: var(--navy); background: white; box-shadow: 0 0 0 3px rgba(30,58,95,0.07); }
-  .reply-form-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
-
-  /* ── PROFILE ── */
-  .profile-header-card {
-    background: white;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-soft);
-    padding: 32px;
-    box-shadow: var(--shadow-card);
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    margin-bottom: 28px;
-  }
-  .profile-avatar-wrap { position: relative; }
-  .profile-avatar {
-    width: 88px; height: 88px;
-    border-radius: 50%;
-    background: var(--navy);
-    color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.8rem;
-    font-weight: 700;
-    overflow: hidden;
-    border: 3px solid var(--navy-ghost);
-  }
-  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .profile-avatar-edit {
-    position: absolute; bottom: 2px; right: 2px;
-    width: 28px; height: 28px;
-    background: var(--navy);
-    color: white;
-    border-radius: 50%;
-    border: 2px solid white;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    font-size: 11px;
-    transition: var(--transition);
-  }
-  .profile-avatar-edit:hover { background: var(--navy-mid); }
-  .profile-info { flex: 1; }
-  .profile-name { font-family: 'Lora', serif; font-size: 1.4rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
-  .profile-handle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; }
-  .profile-stats { display: flex; gap: 24px; }
-  .profile-stat { text-align: center; }
-  .profile-stat-num { font-size: 1.1rem; font-weight: 700; color: var(--navy); }
-  .profile-stat-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
-  .profile-actions { display: flex; gap: 10px; margin-top: 16px; }
-
-  .profile-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
-  .profile-grid-item {
-    aspect-ratio: 1;
-    background: var(--navy-ghost);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    cursor: pointer;
-    transition: var(--transition);
-    position: relative;
-    border: 1px solid var(--border-soft);
-  }
-  .profile-grid-item:hover { transform: scale(1.02); box-shadow: var(--shadow-hover); }
-  .profile-grid-item img { width: 100%; height: 100%; object-fit: cover; }
-  .profile-grid-item-content {
-    position: absolute; inset: 0;
-    padding: 12px;
-    display: flex; flex-direction: column; justify-content: flex-end;
-    background: linear-gradient(to top, rgba(30,58,95,0.7) 0%, transparent 50%);
-    opacity: 0;
-    transition: var(--transition);
-  }
-  .profile-grid-item:hover .profile-grid-item-content { opacity: 1; }
-  .profile-grid-item-title { font-size: 0.78rem; font-weight: 600; color: white; line-height: 1.3; }
-  .profile-grid-item-text {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    padding: 16px;
-  }
-  .profile-grid-item-text p {
-    font-size: 0.8rem; color: var(--text-secondary);
-    text-align: center; line-height: 1.5;
-    display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
-  }
-
-  .profile-section-title {
-    font-size: 0.95rem; font-weight: 700; color: var(--text-primary);
-    margin-bottom: 16px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .profile-section-title span {
-    background: var(--navy-ghost); color: var(--navy);
-    font-size: 0.72rem; font-weight: 700;
-    padding: 2px 8px; border-radius: var(--radius-full);
-  }
-
-  /* ── NEW POST MODAL ── */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(15,31,51,0.45);
-    backdrop-filter: blur(4px);
-    z-index: 500;
-    display: flex; align-items: center; justify-content: center;
-    padding: 20px;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.22s;
-  }
-  .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal {
-    background: white;
-    border-radius: var(--radius-lg);
-    padding: 32px;
-    width: 100%; max-width: 540px;
-    box-shadow: 0 20px 60px rgba(30,58,95,0.18);
-    transform: translateY(16px) scale(0.97);
-    transition: transform 0.22s cubic-bezier(.4,0,.2,1);
-  }
-  .modal-overlay.open .modal { transform: translateY(0) scale(1); }
-  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-  .modal-title { font-family: 'Lora', serif; font-size: 1.1rem; font-weight: 600; color: var(--navy); }
-  .modal-close { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--border); background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-muted); transition: var(--transition); }
-  .modal-close:hover { background: var(--navy-ghost); color: var(--navy); }
-  .modal-form { display: flex; flex-direction: column; gap: 16px; }
-  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
-
-  .file-upload-area {
-    border: 2px dashed var(--border);
-    border-radius: var(--radius-md);
-    padding: 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: var(--transition);
-  }
-  .file-upload-area:hover { border-color: var(--navy); background: var(--navy-mist); }
-  .file-upload-area p { font-size: 0.83rem; color: var(--text-muted); margin-top: 8px; }
-  .file-upload-area svg { color: var(--navy); opacity: 0.5; width: 32px; height: 32px; }
-
-  .tag-auth-required {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--navy-ghost); color: var(--navy);
-    font-size: 0.75rem; font-weight: 600;
-    padding: 4px 10px; border-radius: var(--radius-full);
-  }
-
-  /* ── TOAST ── */
-  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
-  .toast {
-    padding: 14px 20px;
-    background: white;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-hover);
-    font-size: 0.85rem;
-    font-weight: 500;
-    display: flex; align-items: center; gap: 10px;
-    min-width: 260px;
-    animation: toastIn 0.3s cubic-bezier(.4,0,.2,1);
-  }
-  .toast.success { border-left: 3px solid #16a34a; }
-  .toast.error { border-left: 3px solid #dc2626; }
-  .toast.info { border-left: 3px solid var(--navy); }
-  @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-
-  .badge-navy {
-    display: inline-block;
-    background: var(--navy);
-    color: white;
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-  }
-
-  /* Edit profile modal */
-  #edit-profile-modal input, #edit-profile-modal textarea {
-    padding: 12px 16px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-family: 'Sora', sans-serif;
-    font-size: 0.9rem;
-    outline: none;
-    transition: var(--transition);
-    background: var(--navy-mist);
-    color: var(--text-primary);
-    width: 100%;
-  }
-  #edit-profile-modal input:focus, #edit-profile-modal textarea:focus { border-color: var(--navy); background: white; box-shadow: 0 0 0 3px rgba(30,58,95,0.07); }
-
-  .inline-edit-row { display: flex; gap: 12px; }
-  .inline-edit-row .form-group { flex: 1; }
-
-  @media (max-width: 768px) {
-    .auth-left { display: none; }
-    .auth-right { width: 100%; }
-    .page-content, .page-content-wide { padding: 20px; }
-    .profile-header-card { flex-direction: column; text-align: center; }
-    .profile-stats { justify-content: center; }
-    .profile-actions { justify-content: center; }
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Devise Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/style/styles.css">
 </head>
+
 <body>
 
-<!-- ═══════════════════════════════
+  <!-- ═══════════════════════════════
      AUTH VIEW
 ═══════════════════════════════ -->
-<div id="view-auth" class="view active">
-  <div class="auth-left">
-    <div class="auth-brand">
-      <div class="auth-brand-icon">✦</div>
-      <h1>Devise Center</h1>
-      <p>Uma comunidade para compartilhar ideias, histórias e conversas que importam.</p>
-    </div>
-  </div>
-  <div class="auth-right">
-    <div class="auth-tabs">
-      <div class="auth-tab active" onclick="switchAuthTab('login')">Entrar</div>
-      <div class="auth-tab" onclick="switchAuthTab('register')">Criar conta</div>
-    </div>
-
-    <!-- Login Form -->
-    <form id="login-form" class="auth-form active" onsubmit="handleLogin(event)">
-      <div class="form-group">
-        <label>Usuário</label>
-        <input type="text" id="login-username" placeholder="seunome" required autocomplete="username">
-      </div>
-      <div class="form-group">
-        <label>Senha</label>
-        <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
-      </div>
-      <div class="error-msg" id="login-error"></div>
-      <button type="submit" class="btn-primary" id="login-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-        Entrar
-      </button>
-    </form>
-
-    <!-- Register Form -->
-    <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
-      <div class="form-group">
-        <label>Usuário</label>
-        <input type="text" id="reg-username" placeholder="seunome" required autocomplete="username">
-      </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="reg-email" placeholder="seu@email.com" required autocomplete="email">
-      </div>
-      <div class="form-group">
-        <label>Senha</label>
-        <input type="password" id="reg-password" placeholder="••••••••" required autocomplete="new-password" minlength="6">
-      </div>
-      <div class="error-msg" id="register-error"></div>
-      <button type="submit" class="btn-primary" id="register-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-        Criar conta
-      </button>
-    </form>
-
-    <div class="auth-skip">
-      <a href="#" onclick="enterAsGuest()">Continuar sem conta → <span>ver feed público</span></a>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════
-     APP VIEW
-═══════════════════════════════ -->
-<div id="view-app" class="view">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo">✦</div>
-      <div class="sidebar-title">Devise Center</div>
-      <button class="sidebar-toggle" onclick="toggleSidebar()" title="Recolher sidebar">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-    </div>
-    <nav class="sidebar-nav">
-      <a class="nav-item active" onclick="showPage('home')" title="Feed">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span>Feed</span>
-      </a>
-      <a class="nav-item" onclick="showPage('profile-own')" id="sidebar-profile-link" title="Meu Perfil">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Meu Perfil</span>
-      </a>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="sidebar-user" onclick="handleSidebarUserClick()" id="sidebar-user-btn">
-        <div class="sidebar-avatar" id="sidebar-avatar">?</div>
-        <div class="sidebar-user-info">
-          <div class="sidebar-username" id="sidebar-username">Visitante</div>
-          <div class="sidebar-email" id="sidebar-email-display">Não autenticado</div>
-        </div>
+  <div id="view-auth" class="view active">
+    <div class="auth-left">
+      <div class="auth-brand">
+        <div class="auth-brand-icon">✦</div>
+        <h1>Devise Center</h1>
+        <p>Uma comunidade para compartilhar ideias, histórias e conversas que importam.</p>
       </div>
     </div>
-  </aside>
+    <div class="auth-right">
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchAuthTab('login')">Entrar</div>
+        <div class="auth-tab" onclick="switchAuthTab('register')">Criar conta</div>
+      </div>
 
-  <!-- MAIN -->
-  <div class="main-content" id="main-content">
-    <header class="topbar">
-      <div class="topbar-title" id="topbar-title">Feed</div>
-      <div class="search-bar">
-        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" placeholder="Buscar posts..." id="search-input" oninput="filterFeed(this.value)">
-      </div>
-      <div class="topbar-actions">
-        <button class="btn-new-post" onclick="openNewPostModal()" id="new-post-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Novo Post
-        </button>
-        <button class="btn-ghost" onclick="handleLogout()" id="logout-btn" style="display:none">Sair</button>
-      </div>
-    </header>
-
-    <!-- PAGE: HOME -->
-    <div id="page-home" class="page active">
-      <div class="page-content">
-        <div class="feed" id="feed-container">
-          <!-- skeleton -->
-          <div class="loading-skeleton">
-            <div class="skel-header">
-              <div class="skel skel-circle"></div>
-              <div class="skel-lines"><div class="skel" style="height:14px;width:60%"></div><div class="skel" style="height:11px;width:40%"></div></div>
-            </div>
-            <div class="skel" style="height:18px;width:80%"></div>
-            <div class="skel" style="height:12px;width:100%"></div>
-            <div class="skel" style="height:12px;width:90%"></div>
-          </div>
-          <div class="loading-skeleton">
-            <div class="skel-header">
-              <div class="skel skel-circle"></div>
-              <div class="skel-lines"><div class="skel" style="height:14px;width:50%"></div><div class="skel" style="height:11px;width:35%"></div></div>
-            </div>
-            <div class="skel" style="height:18px;width:70%"></div>
-            <div class="skel" style="height:12px;width:100%"></div>
-            <div class="skel" style="height:12px;width:75%"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- PAGE: POST DETAIL -->
-    <div id="page-post" class="page">
-      <div class="page-content">
-        <button class="back-btn" onclick="showPage('home')">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          Voltar ao feed
-        </button>
-        <div id="post-detail-container"></div>
-        <div class="comments-section" id="comments-container"></div>
-      </div>
-    </div>
-
-    <!-- PAGE: PROFILE -->
-    <div id="page-profile" class="page">
-      <div class="page-content-wide" id="profile-content"></div>
-    </div>
-
-  </div><!-- /main-content -->
-</div><!-- /view-app -->
-
-<!-- ─── NEW POST MODAL ─── -->
-<div class="modal-overlay" id="new-post-overlay" onclick="closeNewPostModal(event)">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Novo Post</div>
-      <button class="modal-close" onclick="closeNewPostModalDirect()">×</button>
-    </div>
-    <div class="modal-form">
-      <div class="form-group">
-        <label>Título</label>
-        <input type="text" id="new-post-title" placeholder="Sobre o que é esse post?" style="padding:12px 16px;border:1.5px solid var(--border);border-radius:8px;font-family:Sora,sans-serif;font-size:.9rem;outline:none;background:var(--navy-mist);color:var(--text-primary);width:100%;transition:all .22s" onfocus="this.style.borderColor='var(--navy)';this.style.background='white'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--navy-mist)'">
-      </div>
-      <div class="form-group">
-        <label>Conteúdo</label>
-        <textarea id="new-post-content" placeholder="Compartilhe sua ideia..." style="padding:12px 16px;border:1.5px solid var(--border);border-radius:8px;font-family:Sora,sans-serif;font-size:.9rem;outline:none;resize:none;min-height:120px;background:var(--navy-mist);color:var(--text-primary);width:100%;transition:all .22s" onfocus="this.style.borderColor='var(--navy)';this.style.background='white'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--navy-mist)'"></textarea>
-      </div>
-      <div class="form-group">
-        <label>Imagem (opcional)</label>
-        <div class="file-upload-area" onclick="document.getElementById('post-image-input').click()">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          <p id="upload-label">Clique para selecionar uma imagem</p>
-          <input type="file" id="post-image-input" accept="image/*" style="display:none" onchange="handleFileSelect(this)">
-        </div>
-      </div>
-      <div class="error-msg" id="post-error"></div>
-      <div class="modal-footer">
-        <button class="btn-ghost" onclick="closeNewPostModalDirect()">Cancelar</button>
-        <button class="btn-primary" onclick="submitNewPost()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          Publicar
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ─── EDIT POST MODAL ─── -->
-<div class="modal-overlay" id="edit-post-overlay" onclick="closeEditModal(event)">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Editar Post</div>
-      <button class="modal-close" onclick="closeEditModalDirect()">×</button>
-    </div>
-    <div class="modal-form">
-      <input type="hidden" id="edit-post-id">
-      <div class="form-group">
-        <label>Título</label>
-        <input type="text" id="edit-post-title" style="padding:12px 16px;border:1.5px solid var(--border);border-radius:8px;font-family:Sora,sans-serif;font-size:.9rem;outline:none;background:var(--navy-mist);color:var(--text-primary);width:100%;transition:all .22s" onfocus="this.style.borderColor='var(--navy)';this.style.background='white'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--navy-mist)'">
-      </div>
-      <div class="form-group">
-        <label>Conteúdo</label>
-        <textarea id="edit-post-content" style="padding:12px 16px;border:1.5px solid var(--border);border-radius:8px;font-family:Sora,sans-serif;font-size:.9rem;outline:none;resize:none;min-height:120px;background:var(--navy-mist);color:var(--text-primary);width:100%;transition:all .22s" onfocus="this.style.borderColor='var(--navy)';this.style.background='white'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--navy-mist)'"></textarea>
-      </div>
-      <div class="error-msg" id="edit-post-error"></div>
-      <div class="modal-footer">
-        <button class="btn-ghost" onclick="closeEditModalDirect()">Cancelar</button>
-        <button class="btn-primary" onclick="submitEditPost()">Salvar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ─── EDIT PROFILE MODAL ─── -->
-<div class="modal-overlay" id="edit-profile-overlay" onclick="closeEditProfileModal(event)">
-  <div class="modal" id="edit-profile-modal">
-    <div class="modal-header">
-      <div class="modal-title">Editar Perfil</div>
-      <button class="modal-close" onclick="closeEditProfileModalDirect()">×</button>
-    </div>
-    <div class="modal-form">
-      <div class="inline-edit-row">
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form active" onsubmit="handleLogin(event)">
         <div class="form-group">
           <label>Usuário</label>
-          <input type="text" id="edit-username">
+          <input type="text" id="login-username" placeholder="seunome" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <div class="error-msg" id="login-error"></div>
+        <button type="submit" class="btn-primary" id="login-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+            <polyline points="10 17 15 12 10 7" />
+            <line x1="15" y1="12" x2="3" y2="12" />
+          </svg>
+          Entrar
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label>Usuário</label>
+          <input type="text" id="reg-username" placeholder="seunome" required autocomplete="username">
         </div>
         <div class="form-group">
           <label>Email</label>
-          <input type="email" id="edit-email">
+          <input type="email" id="reg-email" placeholder="seu@email.com" required autocomplete="email">
         </div>
-      </div>
-      <div class="form-group">
-        <label>Nova senha (deixe em branco para não alterar)</label>
-        <input type="password" id="edit-password" placeholder="••••••••">
-      </div>
-      <div class="form-group">
-        <label>Foto de perfil</label>
-        <div class="file-upload-area" onclick="document.getElementById('profile-pic-input').click()">
-          <svg xmlns="http://www.w3.org/2000/svg" style="width:28px;height:28px;color:var(--navy);opacity:.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <p id="profile-upload-label">Clique para selecionar uma foto</p>
-          <input type="file" id="profile-pic-input" accept="image/*" style="display:none" onchange="handleProfilePicSelect(this)">
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="reg-password" placeholder="••••••••" required autocomplete="new-password"
+            minlength="6">
         </div>
-      </div>
-      <div class="error-msg" id="edit-profile-error"></div>
-      <div class="modal-footer">
-        <button class="btn-ghost" onclick="closeEditProfileModalDirect()">Cancelar</button>
-        <button class="btn-primary" onclick="submitEditProfile()">Salvar</button>
+        <div class="error-msg" id="register-error"></div>
+        <button type="submit" class="btn-primary" id="register-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <line x1="19" y1="8" x2="19" y2="14" />
+            <line x1="22" y1="11" x2="16" y2="11" />
+          </svg>
+          Criar conta
+        </button>
+      </form>
+
+      <div class="auth-skip">
+        <a href="#" onclick="enterAsGuest()">Continuar sem conta → <span>ver feed público</span></a>
       </div>
     </div>
   </div>
-</div>
 
-<!-- TOAST CONTAINER -->
-<div class="toast-container" id="toast-container"></div>
+  <!-- ═══════════════════════════════
+     APP VIEW
+═══════════════════════════════ -->
+  <div id="view-app" class="view">
 
-<script>
-const API = 'https://devise-center.onrender.com';
-
-let state = {
-  token: localStorage.getItem('dc_token') || null,
-  user: JSON.parse(localStorage.getItem('dc_user') || 'null'),
-  posts: [],
-  currentPostId: null,
-  profileUserId: null,
-  sidebarCollapsed: false,
-  selectedPostImage: null,
-  selectedProfilePic: null,
-};
-
-// ─── HELPER: Escape HTML to prevent XSS ───
-function esc(str) {
-  return String(str || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-// ─── HELPER: API request with error handling ───
-async function apiRequest(path, options = {}) {
-  const headers = { ...(options.headers || {}) };
-  if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
-  // Don't set Content-Type for FormData (browser sets it with boundary)
-  const res = await fetch(`${API}${path}`, { ...options, headers });
-  if (res.status === 401) {
-    // Token expired or invalid
-    state.token = null;
-    state.user = null;
-    localStorage.removeItem('dc_token');
-    localStorage.removeItem('dc_user');
-    showToast('Sessão expirada. Faça login novamente.', 'error');
-    showView('auth');
-    throw new Error('Não autorizado.');
-  }
-  return res;
-}
-
-// Parse error message from API response safely
-async function parseErrorMessage(res, fallback = 'Ocorreu um erro. Tente novamente.') {
-  try {
-    const text = await res.clone().text();
-    if (!text) return fallback;
-    try {
-      const data = JSON.parse(text);
-      return data.message || data.error || data.detail || fallback;
-    } catch {
-      // Response was plain text, not JSON
-      return text.length < 200 ? text : fallback;
-    }
-  } catch {
-    return fallback;
-  }
-}
-
-// ─── INIT ───
-window.addEventListener('DOMContentLoaded', () => {
-  if (state.token && state.user) {
-    enterApp();
-  }
-});
-
-// ─── VIEWS ───
-function showView(id) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-' + id).classList.add('active');
-}
-
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
-  if (name === 'home') {
-    document.getElementById('page-home').classList.add('active');
-    document.querySelector('.nav-item').classList.add('active');
-    document.getElementById('topbar-title').textContent = 'Feed';
-    loadFeed();
-  } else if (name === 'post') {
-    document.getElementById('page-post').classList.add('active');
-    document.getElementById('topbar-title').textContent = 'Post';
-  } else if (name === 'profile-own') {
-    if (!state.user) { showToast('Faça login para ver seu perfil', 'info'); switchToAuth(); return; }
-    state.profileUserId = state.user.id;
-    document.getElementById('page-profile').classList.add('active');
-    document.getElementById('sidebar-profile-link').classList.add('active');
-    document.getElementById('topbar-title').textContent = 'Meu Perfil';
-    loadProfile(state.user.id, true);
-  } else if (name === 'profile-other') {
-    document.getElementById('page-profile').classList.add('active');
-    document.getElementById('topbar-title').textContent = 'Perfil';
-    loadProfile(state.profileUserId, false);
-  }
-}
-
-// ─── AUTH ───
-function switchAuthTab(tab) {
-  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-  document.querySelector(`.auth-tab:${tab === 'login' ? 'first-child' : 'last-child'}`).classList.add('active');
-  document.getElementById(tab + '-form').classList.add('active');
-}
-
-async function handleLogin(e) {
-  e.preventDefault();
-  const btn = document.getElementById('login-btn');
-  const errEl = document.getElementById('login-error');
-  errEl.classList.remove('show');
-  const username = document.getElementById('login-username').value.trim();
-  const password = document.getElementById('login-password').value;
-  if (!username || !password) {
-    errEl.textContent = 'Preencha usuário e senha.';
-    errEl.classList.add('show');
-    return;
-  }
-  btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin .7s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Entrando...';
-  btn.disabled = true;
-  try {
-    const res = await fetch(`${API}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
-    if (!res.ok) {
-      const msg = await parseErrorMessage(res,
-        res.status === 401 ? 'Usuário ou senha incorretos.' :
-        res.status === 403 ? 'Acesso negado.' :
-        'Erro ao fazer login. Tente novamente.'
-      );
-      throw new Error(msg);
-    }
-    // API returns the JWT token as plain text, not JSON
-    const contentType = res.headers.get('content-type') || '';
-    let token;
-    if (contentType.includes('application/json')) {
-      const data = await res.json();
-      token = data.token || data.accessToken || data;
-    } else {
-      token = await res.text();
-    }
-    state.token = token.trim();
-    localStorage.setItem('dc_token', state.token);
-    await fetchCurrentUser(username);
-    enterApp();
-  } catch (err) {
-    errEl.textContent = err.message;
-    errEl.classList.add('show');
-  } finally {
-    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Entrar';
-    btn.disabled = false;
-  }
-}
-
-async function handleRegister(e) {
-  e.preventDefault();
-  const btn = document.getElementById('register-btn');
-  const errEl = document.getElementById('register-error');
-  errEl.classList.remove('show');
-  const username = document.getElementById('reg-username').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const password = document.getElementById('reg-password').value;
-  if (!username || !email || !password) {
-    errEl.textContent = 'Preencha todos os campos.';
-    errEl.classList.add('show');
-    return;
-  }
-  if (password.length < 6) {
-    errEl.textContent = 'A senha deve ter no mínimo 6 caracteres.';
-    errEl.classList.add('show');
-    return;
-  }
-  btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin .7s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Criando conta...';
-  btn.disabled = true;
-  try {
-    const res = await fetch(`${API}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password }),
-    });
-    if (!res.ok) {
-      const msg = await parseErrorMessage(res,
-        res.status === 409 ? 'Usuário ou e-mail já cadastrado.' :
-        res.status === 400 ? 'Dados inválidos. Verifique os campos.' :
-        'Erro ao criar conta. Tente novamente.'
-      );
-      throw new Error(msg);
-    }
-    showToast('Conta criada com sucesso! Faça login.', 'success');
-    switchAuthTab('login');
-    document.getElementById('login-username').value = username;
-    document.getElementById('reg-username').value = '';
-    document.getElementById('reg-email').value = '';
-    document.getElementById('reg-password').value = '';
-  } catch (err) {
-    errEl.textContent = err.message;
-    errEl.classList.add('show');
-  } finally {
-    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg> Criar conta';
-    btn.disabled = false;
-  }
-}
-
-// After login, find the user object by username
-async function fetchCurrentUser(username) {
-  try {
-    const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
-    const res = await fetch(`${API}/users`, { headers });
-    if (!res.ok) throw new Error();
-    const users = await res.json();
-    const list = Array.isArray(users) ? users : (users.content || users.data || []);
-    const found = list.find(u => u.username === username);
-    if (found) {
-      state.user = found;
-      localStorage.setItem('dc_user', JSON.stringify(found));
-    }
-  } catch {
-    // Non-critical: user can still use the app even if we can't fetch full profile
-    state.user = { username };
-    localStorage.setItem('dc_user', JSON.stringify(state.user));
-  }
-}
-
-function enterAsGuest() { enterApp(); }
-
-function enterApp() {
-  showView('app');
-  updateSidebarUser();
-  if (state.user) {
-    document.getElementById('logout-btn').style.display = '';
-    document.getElementById('new-post-btn').style.opacity = '1';
-    document.getElementById('new-post-btn').style.pointerEvents = 'auto';
-    document.getElementById('new-post-btn').title = '';
-  } else {
-    document.getElementById('logout-btn').style.display = 'none';
-    document.getElementById('new-post-btn').style.opacity = '0.5';
-    document.getElementById('new-post-btn').style.pointerEvents = 'auto'; // still clickable, will prompt login
-    document.getElementById('new-post-btn').title = 'Faça login para publicar';
-  }
-  showPage('home');
-}
-
-function handleLogout() {
-  state.token = null;
-  state.user = null;
-  localStorage.removeItem('dc_token');
-  localStorage.removeItem('dc_user');
-  showView('auth');
-  switchAuthTab('login');
-}
-
-function switchToAuth() {
-  showView('auth');
-}
-
-function handleSidebarUserClick() {
-  if (!state.user) {
-    switchToAuth();
-  } else {
-    showPage('profile-own');
-  }
-}
-
-function updateSidebarUser() {
-  const u = state.user;
-  const avatarEl = document.getElementById('sidebar-avatar');
-  const nameEl = document.getElementById('sidebar-username');
-  const emailEl = document.getElementById('sidebar-email-display');
-  if (u) {
-    nameEl.textContent = u.username;
-    emailEl.textContent = u.email || '';
-    if (u.profilePicture) {
-      avatarEl.innerHTML = `<img src="${esc(u.profilePicture)}" alt="${esc(u.username)}">`;
-    } else {
-      avatarEl.textContent = u.username.charAt(0).toUpperCase();
-    }
-  } else {
-    nameEl.textContent = 'Visitante';
-    emailEl.textContent = 'Não autenticado';
-    avatarEl.textContent = '?';
-  }
-}
-
-// ─── SIDEBAR ───
-function toggleSidebar() {
-  state.sidebarCollapsed = !state.sidebarCollapsed;
-  const sb = document.getElementById('sidebar');
-  const mc = document.getElementById('main-content');
-  sb.classList.toggle('collapsed', state.sidebarCollapsed);
-  mc.classList.toggle('sidebar-collapsed', state.sidebarCollapsed);
-}
-
-// ─── FEED ───
-async function loadFeed() {
-  const container = document.getElementById('feed-container');
-  container.innerHTML = `
-    <div class="loading-skeleton">
-      <div class="skel-header"><div class="skel skel-circle"></div><div class="skel-lines"><div class="skel" style="height:14px;width:60%"></div><div class="skel" style="height:11px;width:40%"></div></div></div>
-      <div class="skel" style="height:18px;width:80%"></div>
-      <div class="skel" style="height:12px;width:100%"></div>
-      <div class="skel" style="height:12px;width:90%"></div>
-    </div>
-    <div class="loading-skeleton">
-      <div class="skel-header"><div class="skel skel-circle"></div><div class="skel-lines"><div class="skel" style="height:14px;width:50%"></div><div class="skel" style="height:11px;width:35%"></div></div></div>
-      <div class="skel" style="height:18px;width:70%"></div>
-      <div class="skel" style="height:12px;width:100%"></div>
-      <div class="skel" style="height:12px;width:75%"></div>
-    </div>`;
-  try {
-    const res = await fetch(`${API}/posts`);
-    if (!res.ok) throw new Error(`Erro ${res.status}`);
-    const data = await res.json();
-    // Handle both array response and paginated response
-    state.posts = Array.isArray(data) ? data : (data.content || data.data || []);
-    renderFeed(state.posts);
-  } catch (err) {
-    container.innerHTML = `
-      <div class="empty-feed">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <p>Não foi possível carregar o feed.<br><small style="font-size:.75rem;opacity:.7">${err.message}</small></p>
-        <button class="btn-ghost" style="margin-top:16px;padding:9px 20px;font-size:.83rem" onclick="loadFeed()">Tentar novamente</button>
-      </div>`;
-  }
-}
-
-function renderFeed(posts) {
-  const container = document.getElementById('feed-container');
-  if (!posts.length) {
-    container.innerHTML = `<div class="empty-feed"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>Nenhum post ainda. Seja o primeiro!</p></div>`;
-    return;
-  }
-  container.innerHTML = posts.map(p => renderPostCard(p)).join('');
-}
-
-function renderPostCard(p) {
-  const isOwn = state.user && (state.user.id === p.userId || state.user.username === p.author);
-  const initials = p.author ? p.author.charAt(0).toUpperCase() : '?';
-  const avatarHtml = p.authorPicture
-    ? `<img src="${esc(p.authorPicture)}" alt="${esc(p.author)}">`
-    : initials;
-  const timeStr = p.createdAt ? new Date(p.createdAt).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' }) : '';
-  const optionsMenu = isOwn ? `
-    <div style="position:relative">
-      <button class="post-options" onclick="toggleDropdown(event, 'dd-${p.id}')">⋯</button>
-      <div class="dropdown-menu" id="dd-${p.id}">
-        <div class="dropdown-item" onclick="openEditModal(${p.id})">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          Editar
-        </div>
-        <div class="dropdown-item danger" onclick="deletePost(${p.id})">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-          Excluir
-        </div>
-      </div>
-    </div>` : '';
-  const imageHtml = p.imageUrl ? `<img src="${esc(p.imageUrl)}" alt="" class="post-image" onerror="this.style.display='none'">` : '';
-  const contentPreview = esc((p.content || '').slice(0, 300)) + ((p.content||'').length > 300 ? '...' : '');
-  return `
-    <div class="post-card" id="pcard-${p.id}">
-      <div class="post-header">
-        <div class="post-avatar" onclick="viewUserProfile(event, '${esc(p.author)}')" style="cursor:pointer" title="Ver perfil de ${esc(p.author)}">${avatarHtml}</div>
-        <div class="post-meta">
-          <div class="post-author" onclick="viewUserProfile(event, '${esc(p.author)}')" style="cursor:pointer">${esc(p.author) || 'Usuário'}</div>
-          <div class="post-time">${timeStr}</div>
-        </div>
-        ${optionsMenu}
-      </div>
-      ${p.title ? `<div class="post-title" onclick="openPost(${p.id})">${esc(p.title)}</div>` : ''}
-      ${imageHtml}
-      <div class="post-body" onclick="openPost(${p.id})">${contentPreview}</div>
-      <div class="post-footer">
-        <button class="post-action" onclick="openPost(${p.id})">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Comentários
-        </button>
-        <button class="post-action" onclick="openPost(${p.id})">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          Ver post
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">✦</div>
+        <div class="sidebar-title">Devise Center</div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()" title="Recolher sidebar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
         </button>
       </div>
-    </div>`;
-}
-
-function filterFeed(q) {
-  const lower = q.toLowerCase();
-  const filtered = state.posts.filter(p =>
-    (p.title||'').toLowerCase().includes(lower) ||
-    (p.content||'').toLowerCase().includes(lower) ||
-    (p.author||'').toLowerCase().includes(lower)
-  );
-  renderFeed(filtered);
-}
-
-function toggleDropdown(e, id) {
-  e.stopPropagation();
-  document.querySelectorAll('.dropdown-menu.open').forEach(m => { if (m.id !== id) m.classList.remove('open'); });
-  document.getElementById(id).classList.toggle('open');
-}
-document.addEventListener('click', () => document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open')));
-
-// ─── POST DETAIL ───
-async function openPost(id) {
-  state.currentPostId = id;
-  showPage('post');
-  const container = document.getElementById('post-detail-container');
-  const commentsContainer = document.getElementById('comments-container');
-  container.innerHTML = `<div class="loading-skeleton"><div class="skel" style="height:28px;width:70%;margin-bottom:16px"></div><div class="skel" style="height:13px;width:100%"></div><div class="skel" style="height:13px;width:90%"></div><div class="skel" style="height:13px;width:80%"></div></div>`;
-  commentsContainer.innerHTML = '';
-  try {
-    const postRes = await fetch(`${API}/posts/${id}`);
-    if (!postRes.ok) throw new Error(`Não foi possível carregar o post (${postRes.status}).`);
-    const post = await postRes.json();
-
-    const commentsRes = await fetch(`${API}/comments?post=${id}`);
-    const commentsRaw = commentsRes.ok ? await commentsRes.json() : [];
-    const comments = Array.isArray(commentsRaw) ? commentsRaw : (commentsRaw.content || []);
-
-    const isOwn = state.user && (state.user.id === post.userId || state.user.username === post.author);
-    const imgHtml = post.imageUrl ? `<img src="${esc(post.imageUrl)}" alt="" class="post-image" onerror="this.style.display='none'">` : '';
-    const avatarInit = (post.author||'?').charAt(0).toUpperCase();
-    container.innerHTML = `
-      <div class="post-detail-card">
-        <div class="post-header" style="margin-bottom:20px">
-          <div class="post-avatar" onclick="viewUserProfile(event,'${esc(post.author)}')" style="cursor:pointer">${post.authorPicture ? `<img src="${esc(post.authorPicture)}">` : avatarInit}</div>
-          <div class="post-meta">
-            <div class="post-author" onclick="viewUserProfile(event,'${esc(post.author)}')" style="cursor:pointer">${esc(post.author)||'Usuário'}</div>
-            <div class="post-time">${post.createdAt ? new Date(post.createdAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}) : ''}</div>
+      <nav class="sidebar-nav">
+        <a class="nav-item active" onclick="showPage('home')" title="Feed">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          <span>Feed</span>
+        </a>
+        <a class="nav-item" onclick="showPage('profile-own')" id="sidebar-profile-link" title="Meu Perfil">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <span>Meu Perfil</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user" onclick="handleSidebarUserClick()" id="sidebar-user-btn">
+          <div class="sidebar-avatar" id="sidebar-avatar">?</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-username" id="sidebar-username">Visitante</div>
+            <div class="sidebar-email" id="sidebar-email-display">Não autenticado</div>
           </div>
-          ${isOwn ? `<div style="display:flex;gap:8px">
-            <button class="btn-ghost" style="padding:8px 14px;font-size:.8rem" onclick="openEditModal(${post.id})">Editar</button>
-            <button class="btn-danger" onclick="deletePost(${post.id})">Excluir</button>
-          </div>` : ''}
         </div>
-        ${post.title ? `<div class="post-detail-title">${esc(post.title)}</div>` : ''}
-        ${imgHtml}
-        <div class="post-detail-body">${esc(post.content||'')}</div>
-      </div>`;
+      </div>
+    </aside>
 
-    const authPrompt = !state.user ? `<div style="background:var(--navy-ghost);border-radius:var(--radius-md);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px"><span style="font-size:.85rem;color:var(--text-secondary)">Faça login para comentar</span><button class="btn-primary" style="padding:8px 16px;font-size:.8rem;white-space:nowrap" onclick="switchToAuth()">Entrar</button></div>` : '';
-    const commentFormHtml = state.user ? `
-      <div class="comment-form">
-        <textarea class="comment-input" id="main-comment-input" placeholder="Escreva um comentário..."></textarea>
-        <div class="comment-form-footer">
-          <button class="btn-primary" style="padding:9px 18px;font-size:.83rem" id="submit-comment-btn" onclick="submitComment()">Comentar</button>
+    <!-- MAIN -->
+    <div class="main-content" id="main-content">
+      <header class="topbar">
+        <div class="topbar-title" id="topbar-title">Feed</div>
+        <div class="search-bar">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input type="text" placeholder="Buscar posts..." id="search-input" oninput="filterFeed(this.value)">
         </div>
-      </div>` : authPrompt;
-
-    commentsContainer.innerHTML = `
-      <h3>${comments.length} Comentário${comments.length !== 1 ? 's' : ''}</h3>
-      ${commentFormHtml}
-      <div id="comments-list"></div>`;
-    renderComments(comments);
-  } catch (err) {
-    container.innerHTML = `
-      <div class="empty-feed">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <p>${err.message}</p>
-        <button class="btn-ghost" style="margin-top:16px;padding:9px 20px;font-size:.83rem" onclick="openPost(${id})">Tentar novamente</button>
-      </div>`;
-  }
-}
-
-async function renderComments(comments) {
-  const list = document.getElementById('comments-list');
-  if (!list) return;
-  if (!comments.length) {
-    list.innerHTML = `<div class="empty-feed" style="padding:32px"><p>Sem comentários ainda.</p></div>`;
-    return;
-  }
-  // Fetch replies for each comment concurrently
-  const withReplies = await Promise.all(comments.map(async c => {
-    try {
-      const r = await fetch(`${API}/comments/${c.id}/replies`);
-      if (!r.ok) return { ...c, replies: [] };
-      const raw = await r.json();
-      return { ...c, replies: Array.isArray(raw) ? raw : (raw.content || []) };
-    } catch { return { ...c, replies: [] }; }
-  }));
-  list.innerHTML = withReplies.map(c => renderCommentCard(c)).join('');
-}
-
-function renderCommentCard(c) {
-  const isOwn = state.user && (state.user.id === c.userId || state.user.username === c.author);
-  const initials = (c.author||'?').charAt(0).toUpperCase();
-  const avatarHtml = c.authorPicture ? `<img src="${esc(c.authorPicture)}">` : initials;
-  const repliesHtml = (c.replies||[]).map(r => {
-    const ri = (r.author||'?').charAt(0).toUpperCase();
-    const ra = r.authorPicture ? `<img src="${esc(r.authorPicture)}">` : ri;
-    const isOwnR = state.user && (state.user.username === r.author || state.user.id === r.userId);
-    return `<div class="reply-card">
-      <div class="comment-header">
-        <div class="comment-avatar">${ra}</div>
-        <div><div class="comment-author">${esc(r.author)||'Usuário'}</div><div class="comment-time">${r.createdAt ? new Date(r.createdAt).toLocaleDateString('pt-BR') : ''}</div></div>
-        ${isOwnR ? `<button class="btn-danger" style="margin-left:auto;padding:5px 10px;font-size:.72rem" onclick="deleteComment(${r.id})">Excluir</button>` : ''}
-      </div>
-      <div class="comment-body">${esc(r.content)}</div>
-    </div>`;
-  }).join('');
-  const replyBtn = state.user ? `<button class="comment-reply-btn" onclick="toggleReplyForm(${c.id})">↩ Responder</button>` : '';
-  const replyForm = state.user ? `
-    <div class="reply-form" id="reply-form-${c.id}" style="display:none">
-      <textarea class="reply-input" id="reply-input-${c.id}" placeholder="Escreva uma resposta..."></textarea>
-      <div class="reply-form-footer">
-        <button class="btn-ghost" style="padding:7px 14px;font-size:.8rem" onclick="toggleReplyForm(${c.id})">Cancelar</button>
-        <button class="btn-primary" style="padding:7px 14px;font-size:.8rem" onclick="submitReply(${c.id})">Responder</button>
-      </div>
-    </div>` : '';
-  // Fix: check length, not truthiness of string (empty string is still truthy!)
-  const repliesContainer = repliesHtml.length > 0 ? `<div class="replies-container">${repliesHtml}</div>` : '';
-  return `
-    <div class="comment-card" id="comment-${c.id}">
-      <div class="comment-header">
-        <div class="comment-avatar">${avatarHtml}</div>
-        <div style="flex:1"><div class="comment-author">${esc(c.author)||'Usuário'}</div><div class="comment-time">${c.createdAt ? new Date(c.createdAt).toLocaleDateString('pt-BR') : ''}</div></div>
-        ${isOwn ? `<button class="btn-danger" style="padding:5px 10px;font-size:.72rem" onclick="deleteComment(${c.id})">Excluir</button>` : ''}
-      </div>
-      <div class="comment-body">${esc(c.content)}</div>
-      ${replyBtn}
-      ${replyForm}
-      ${repliesContainer}
-    </div>`;
-}
-
-function toggleReplyForm(id) {
-  const f = document.getElementById(`reply-form-${id}`);
-  f.style.display = f.style.display === 'none' ? 'block' : 'none';
-}
-
-async function submitComment() {
-  if (!state.user) return;
-  const btn = document.getElementById('submit-comment-btn');
-  const input = document.getElementById('main-comment-input');
-  const content = input.value.trim();
-  if (!content) { showToast('Escreva algo antes de comentar.', 'info'); return; }
-  if (btn) { btn.disabled = true; btn.textContent = 'Publicando...'; }
-  try {
-    const res = await apiRequest('/comments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, postId: state.currentPostId }),
-    });
-    if (!res.ok) {
-      const msg = await parseErrorMessage(res, 'Erro ao publicar comentário.');
-      throw new Error(msg);
-    }
-    input.value = '';
-    showToast('Comentário publicado!', 'success');
-    const commentsRes = await fetch(`${API}/comments?post=${state.currentPostId}`);
-    const raw = commentsRes.ok ? await commentsRes.json() : [];
-    renderComments(Array.isArray(raw) ? raw : (raw.content || []));
-  } catch (err) { showToast(err.message, 'error'); }
-  finally { if (btn) { btn.disabled = false; btn.textContent = 'Comentar'; } }
-}
-
-async function submitReply(commentId) {
-  if (!state.user) return;
-  const input = document.getElementById(`reply-input-${commentId}`);
-  const content = input.value.trim();
-  if (!content) { showToast('Escreva algo antes de responder.', 'info'); return; }
-  try {
-    const res = await apiRequest('/comments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, postId: state.currentPostId, parentCommentId: commentId }),
-    });
-    if (!res.ok) {
-      const msg = await parseErrorMessage(res, 'Erro ao publicar resposta.');
-      throw new Error(msg);
-    }
-    input.value = '';
-    toggleReplyForm(commentId);
-    showToast('Resposta publicada!', 'success');
-    const commentsRes2 = await fetch(`${API}/comments?post=${state.currentPostId}`);
-    const raw2 = commentsRes2.ok ? await commentsRes2.json() : [];
-    renderComments(Array.isArray(raw2) ? raw2 : (raw2.content || []));
-  } catch (err) { showToast(err.message || 'Erro ao publicar resposta.', 'error'); }
-}
-
-async function deleteComment(id) {
-  if (!state.user) return;
-  if (!confirm('Excluir este comentário?')) return;
-  try {
-    const res = await apiRequest(`/comments/${id}`, { method: 'DELETE' });
-    if (!res.ok) {
-      const msg = await parseErrorMessage(res, 'Erro ao excluir comentário.');
-      throw new Error(msg);
-    }
-    showToast('Comentário excluído.', 'success');
-    const commentsRes = await fetch(`${API}/comments?post=${state.currentPostId}`);
-    const raw = commentsRes.ok ? await commentsRes.json() : [];
-    renderComments(Array.isArray(raw) ? raw : (raw.content || []));
-  } catch (err) { showToast(err.message, 'error'); }
-}
-
-// ─── NEW POST ───
-function openNewPostModal() {
-  if (!state.user) { showToast('Faça login para publicar.', 'info'); switchToAuth(); return; }
-  document.getElementById('new-post-overlay').classList.add('open');
-}
-function closeNewPostModal(e) { if (e.target === document.getElementById('new-post-overlay')) closeNewPostModalDirect(); }
-function closeNewPostModalDirect() {
-  document.getElementById('new-post-overlay').classList.remove('open');
-  document.getElementById('new-post-title').value = '';
-  document.getElementById('new-post-content').value = '';
-  document.getElementById('post-error').classList.remove('show');
-  state.selectedPostImage = null;
-  document.getElementById('upload-label').textContent = 'Clique para selecionar uma imagem';
-  document.getElementById('post-image-input').value = '';
-}
-function handleFileSelect(input) {
-  if (input.files[0]) {
-    state.selectedPostImage = input.files[0];
-    document.getElementById('upload-label').textContent = '✓ ' + input.files[0].name;
-  }
-}
-async function submitNewPost() {
-  const title = document.getElementById('new-post-title').value.trim();
-  const content = document.getElementById('new-post-content').value.trim();
-  const errEl = document.getElementById('post-error');
-  errEl.classList.remove('show');
-  if (!content) { errEl.textContent = 'O conteúdo é obrigatório.'; errEl.classList.add('show'); return; }
-  const submitBtn = document.querySelector('#new-post-overlay .btn-primary');
-  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Publicando...'; }
-  try {
-    const fd = new FormData();
-    if (title) fd.append('title', title);
-    fd.append('content', content);
-    if (state.selectedPostImage) fd.append('image', state.selectedPostImage);
-    const res = await apiRequest('/posts', { method: 'POST', body: fd });
-    if (!res.ok) {
-      const msg = await parseErrorMessage(res, 'Erro ao publicar post. Tente novamente.');
-      throw new Error(msg);
-    }
-    closeNewPostModalDirect();
-    showToast('Post publicado com sucesso!', 'success');
-    showPage('home');
-  } catch (err) {
-    errEl.textContent = err.message;
-    errEl.classList.add('show');
-  } finally {
-    if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Publicar'; }
-  }
-}
-
-// ─── EDIT POST ───
-async function openEditModal(id) {
-  // Try to find in state first, fallback to API
-  let post = state.posts.find(p => p.id === id);
-  if (!post) {
-    try {
-      const res = await fetch(`${API}/posts/${id}`);
-      if (res.ok) post = await res.json();
-    } catch {}
-  }
-  if (!post) { showToast('Post não encontrado.', 'error'); return; }
-  document.getElementById('edit-post-id').value = id;
-  document.getElementById('edit-post-title').value = post.title || '';
-  document.getElementById('edit-post-content').value = post.content || '';
-  document.getElementById('edit-post-error').classList.remove('show');
-  document.getElementById('edit-post-overlay').classList.add('open');
-}
-function closeEditModal(e) { if (e.target === document.getElementById('edit-post-overlay')) closeEditModalDirect(); }
-function closeEditModalDirect() { document.getElementById('edit-post-overlay').classList.remove('open'); }
-async function submitEditPost() {
-  const id = document.getElementById('edit-post-id').value;
-  const title = document.getElementById('edit-post-title').value.trim();
-  const content = document.getElementById('edit-post-content').value.trim();
-  const errEl = document.getElementById('edit-post-error');
-  errEl.classList.remove('show');
-  if (!content) { errEl.textContent = 'O conteúdo é obrigatório.'; errEl.classList.add('show'); return; }
-  const saveBtn = document.querySelector('#edit-post-overlay .btn-primary');
-  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Salvando...'; }
-  try {
-    const res = await apiRequest(`/posts/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, content }),
-    });
-    if (!res.ok) {
-      const msg = await parseErrorMessage(res, 'Erro ao editar post.');
-      throw new Error(msg);
-    }
-    closeEditModalDirect();
-    showToast('Post atualizado!', 'success');
-    // Refresh feed or reload current post
-    if (document.getElementById('page-post').classList.contains('active')) {
-      openPost(id);
-    } else {
-      loadFeed();
-    }
-  } catch (err) { errEl.textContent = err.message; errEl.classList.add('show'); }
-  finally { if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Salvar'; } }
-}
-
-async function deletePost(id) {
-  if (!confirm('Excluir este post permanentemente?')) return;
-  try {
-    const res = await apiRequest(`/posts/${id}`, { method: 'DELETE' });
-    if (!res.ok) {
-      const msg = await parseErrorMessage(res, 'Erro ao excluir post.');
-      throw new Error(msg);
-    }
-    showToast('Post excluído com sucesso.', 'success');
-    showPage('home');
-  } catch (err) { showToast(err.message, 'error'); }
-}
-
-// ─── PROFILE ───
-async function loadProfile(userId, isOwn) {
-  const container = document.getElementById('profile-content');
-  container.innerHTML = `
-    <div class="loading-skeleton" style="margin-bottom:20px">
-      <div class="skel-header"><div class="skel skel-circle" style="width:88px;height:88px"></div>
-      <div class="skel-lines"><div class="skel" style="height:22px;width:40%"></div><div class="skel" style="height:14px;width:25%"></div><div class="skel" style="height:14px;width:20%"></div></div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-      ${[1,2,3,4,5,6].map(()=>`<div class="skel" style="aspect-ratio:1;border-radius:14px"></div>`).join('')}
-    </div>`;
-  try {
-    const userRes = await fetch(`${API}/users/${userId}`);
-    if (!userRes.ok) throw new Error(`Não foi possível carregar o perfil (${userRes.status}).`);
-    const user = await userRes.json();
-
-    // Fetch all posts and filter by author
-    const allPostsRes = await fetch(`${API}/posts`);
-    const allPostsRaw = allPostsRes.ok ? await allPostsRes.json() : [];
-    const allPosts = Array.isArray(allPostsRaw) ? allPostsRaw : (allPostsRaw.content || []);
-    const userPosts = allPosts.filter(p => p.author === user.username || p.userId === userId);
-
-    const initials = (user.username||'?').charAt(0).toUpperCase();
-    const avatarHtml = user.profilePicture ? `<img src="${user.profilePicture}" alt="${user.username}">` : initials;
-    const avatarEditBtn = isOwn ? `<div class="profile-avatar-edit" onclick="openEditProfileModal()" title="Alterar foto">✎</div>` : '';
-    const editBtns = isOwn ? `
-      <div class="profile-actions">
-        <button class="btn-primary" style="padding:9px 20px;font-size:.83rem" onclick="openEditProfileModal()">Editar perfil</button>
-        <button class="btn-ghost" style="padding:9px 20px;font-size:.83rem" onclick="handleLogout()">Sair</button>
-      </div>` : '';
-
-    container.innerHTML = `
-      <div class="profile-header-card">
-        <div class="profile-avatar-wrap">
-          <div class="profile-avatar">${avatarHtml}</div>
-          ${avatarEditBtn}
+        <div class="topbar-actions">
+          <button class="btn-new-post" onclick="openNewPostModal()" id="new-post-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Novo Post
+          </button>
+          <button class="btn-ghost" onclick="handleLogout()" id="logout-btn" style="display:none">Sair</button>
         </div>
-        <div class="profile-info">
-          <div class="profile-name">${user.username}</div>
-          <div class="profile-handle">${user.email || ''}</div>
-          <div class="profile-stats">
-            <div class="profile-stat">
-              <div class="profile-stat-num">${userPosts.length}</div>
-              <div class="profile-stat-label">Posts</div>
+      </header>
+
+      <!-- PAGE: HOME -->
+      <div id="page-home" class="page active">
+        <div class="page-content">
+          <div class="feed" id="feed-container">
+            <!-- skeleton -->
+            <div class="loading-skeleton">
+              <div class="skel-header">
+                <div class="skel skel-circle"></div>
+                <div class="skel-lines">
+                  <div class="skel" style="height:14px;width:60%"></div>
+                  <div class="skel" style="height:11px;width:40%"></div>
+                </div>
+              </div>
+              <div class="skel" style="height:18px;width:80%"></div>
+              <div class="skel" style="height:12px;width:100%"></div>
+              <div class="skel" style="height:12px;width:90%"></div>
+            </div>
+            <div class="loading-skeleton">
+              <div class="skel-header">
+                <div class="skel skel-circle"></div>
+                <div class="skel-lines">
+                  <div class="skel" style="height:14px;width:50%"></div>
+                  <div class="skel" style="height:11px;width:35%"></div>
+                </div>
+              </div>
+              <div class="skel" style="height:18px;width:70%"></div>
+              <div class="skel" style="height:12px;width:100%"></div>
+              <div class="skel" style="height:12px;width:75%"></div>
             </div>
           </div>
-          ${editBtns}
         </div>
       </div>
-      <div class="profile-section-title">Posts <span>${userPosts.length}</span></div>
-      <div class="profile-grid" id="profile-posts-grid"></div>`;
 
-    const grid = document.getElementById('profile-posts-grid');
-    if (!userPosts.length) {
-      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px 24px;color:var(--text-muted);font-size:.88rem">Nenhum post publicado ainda.</div>`;
-    } else {
-      grid.innerHTML = userPosts.map(p => {
-        if (p.imageUrl) {
-          return `<div class="profile-grid-item" onclick="openPostFromProfile(${p.id})" title="${p.title||''}">
-            <img src="${p.imageUrl}" alt="" onerror="this.style.display='none'">
-            <div class="profile-grid-item-content"><div class="profile-grid-item-title">${p.title||''}</div></div>
-          </div>`;
-        }
-        return `<div class="profile-grid-item" onclick="openPostFromProfile(${p.id})" style="background:var(--navy-ghost)" title="${p.title||''}">
-          <div class="profile-grid-item-text"><p>${p.title || p.content||''}</p></div>
-        </div>`;
-      }).join('');
-    }
-  } catch (err) {
-    container.innerHTML = `
-      <div class="empty-feed">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <p>${err.message}</p>
-        <button class="btn-ghost" style="margin-top:16px;padding:9px 20px;font-size:.83rem" onclick="loadProfile(${userId},${isOwn})">Tentar novamente</button>
-      </div>`;
-  }
-}
+      <!-- PAGE: POST DETAIL -->
+      <div id="page-post" class="page">
+        <div class="page-content">
+          <button class="back-btn" onclick="showPage('home')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Voltar ao feed
+          </button>
+          <div id="post-detail-container"></div>
+          <div class="comments-section" id="comments-container"></div>
+        </div>
+      </div>
 
-function openPostFromProfile(id) {
-  state.currentPostId = id;
-  showPage('post'); // must come before openPost so the DOM containers exist
-  openPost(id);
-}
+      <!-- PAGE: PROFILE -->
+      <div id="page-profile" class="page">
+        <div class="page-content-wide" id="profile-content"></div>
+      </div>
 
-async function viewUserProfile(e, username) {
-  e.stopPropagation();
-  try {
-    const res = await fetch(`${API}/users`);
-    if (!res.ok) throw new Error();
-    const raw = await res.json();
-    const users = Array.isArray(raw) ? raw : (raw.content || []);
-    const found = users.find(u => u.username === username);
-    if (!found) { showToast('Usuário não encontrado.', 'error'); return; }
-    const isOwn = state.user && state.user.username === username;
-    state.profileUserId = found.id;
-    if (isOwn) showPage('profile-own');
-    else showPage('profile-other');
-  } catch { showToast('Erro ao carregar perfil.', 'error'); }
-}
+    </div><!-- /main-content -->
+  </div><!-- /view-app -->
 
-// ─── EDIT PROFILE ───
-function openEditProfileModal() {
-  if (!state.user) return;
-  document.getElementById('edit-username').value = state.user.username || '';
-  document.getElementById('edit-email').value = state.user.email || '';
-  document.getElementById('edit-password').value = '';
-  document.getElementById('edit-profile-error').classList.remove('show');
-  state.selectedProfilePic = null;
-  document.getElementById('profile-upload-label').textContent = 'Clique para selecionar uma foto';
-  document.getElementById('profile-pic-input').value = '';
-  document.getElementById('edit-profile-overlay').classList.add('open');
-}
-function closeEditProfileModal(e) { if (e.target === document.getElementById('edit-profile-overlay')) closeEditProfileModalDirect(); }
-function closeEditProfileModalDirect() { document.getElementById('edit-profile-overlay').classList.remove('open'); }
-function handleProfilePicSelect(input) {
-  if (input.files[0]) {
-    state.selectedProfilePic = input.files[0];
-    document.getElementById('profile-upload-label').textContent = '✓ ' + input.files[0].name;
-  }
-}
-async function submitEditProfile() {
-  const username = document.getElementById('edit-username').value.trim();
-  const email = document.getElementById('edit-email').value.trim();
-  const password = document.getElementById('edit-password').value;
-  const errEl = document.getElementById('edit-profile-error');
-  errEl.classList.remove('show');
-  if (!username || !email) { errEl.textContent = 'Usuário e email são obrigatórios.'; errEl.classList.add('show'); return; }
-  const saveBtn = document.querySelector('#edit-profile-modal .btn-primary');
-  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Salvando...'; }
-  try {
-    const body = { username, email };
-    if (password) body.password = password;
-    const res = await apiRequest(`/users/${state.user.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const msg = await parseErrorMessage(res, 'Erro ao atualizar perfil.');
-      throw new Error(msg);
-    }
-    // Upload profile picture if selected
-    if (state.selectedProfilePic) {
-      const fd = new FormData();
-      fd.append('image', state.selectedProfilePic);
-      const picRes = await apiRequest(`/users/${state.user.id}/pictures`, {
-        method: 'PUT',
-        body: fd,
-      });
-      if (!picRes.ok) showToast('Perfil salvo, mas houve um erro ao enviar a foto.', 'info');
-    }
-    // Refresh user data
-    const updRes = await fetch(`${API}/users/${state.user.id}`);
-    if (updRes.ok) {
-      const updUser = await updRes.json();
-      state.user = updUser;
-      localStorage.setItem('dc_user', JSON.stringify(updUser));
-    } else {
-      state.user = { ...state.user, username, email };
-      localStorage.setItem('dc_user', JSON.stringify(state.user));
-    }
-    updateSidebarUser();
-    closeEditProfileModalDirect();
-    showToast('Perfil atualizado com sucesso!', 'success');
-    loadProfile(state.user.id, true);
-  } catch (err) { errEl.textContent = err.message; errEl.classList.add('show'); }
-  finally { if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Salvar'; } }
-}
+  <!-- ─── NEW POST MODAL ─── -->
+  <div class="modal-overlay" id="new-post-overlay" onclick="closeNewPostModal(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Novo Post</div>
+        <button class="modal-close" onclick="closeNewPostModalDirect()">×</button>
+      </div>
+      <div class="modal-form">
+        <div class="form-group">
+          <label>Título</label>
+          <input type="text" id="new-post-title" placeholder="Sobre o que é esse post?"
+            style="padding:12px 16px;border:1.5px solid var(--border);border-radius:8px;font-family:Sora,sans-serif;font-size:.9rem;outline:none;background:var(--navy-mist);color:var(--text-primary);width:100%;transition:all .22s"
+            onfocus="this.style.borderColor='var(--navy)';this.style.background='white'"
+            onblur="this.style.borderColor='var(--border)';this.style.background='var(--navy-mist)'">
+        </div>
+        <div class="form-group">
+          <label>Conteúdo</label>
+          <textarea id="new-post-content" placeholder="Compartilhe sua ideia..."
+            style="padding:12px 16px;border:1.5px solid var(--border);border-radius:8px;font-family:Sora,sans-serif;font-size:.9rem;outline:none;resize:none;min-height:120px;background:var(--navy-mist);color:var(--text-primary);width:100%;transition:all .22s"
+            onfocus="this.style.borderColor='var(--navy)';this.style.background='white'"
+            onblur="this.style.borderColor='var(--border)';this.style.background='var(--navy-mist)'"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Imagem (opcional)</label>
+          <div class="file-upload-area" onclick="document.getElementById('post-image-input').click()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            <p id="upload-label">Clique para selecionar uma imagem</p>
+            <input type="file" id="post-image-input" accept="image/*" style="display:none"
+              onchange="handleFileSelect(this)">
+          </div>
+        </div>
+        <div class="error-msg" id="post-error"></div>
+        <div class="modal-footer">
+          <button class="btn-ghost" onclick="closeNewPostModalDirect()">Cancelar</button>
+          <button class="btn-primary" onclick="submitNewPost()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+            Publicar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-// ─── TOAST ───
-function showToast(msg, type = 'info') {
-  const container = document.getElementById('toast-container');
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  const icons = {
-    success: '✓',
-    error: '✕',
-    info: 'ℹ',
-  };
-  t.innerHTML = `<span style="font-weight:700;color:${type==='success'?'#16a34a':type==='error'?'#dc2626':'var(--navy)'}">${icons[type]}</span> ${msg}`;
-  container.appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(20px)'; t.style.transition = 'all 0.3s'; setTimeout(() => t.remove(), 300); }, 3000);
-}
-</script>
+  <!-- ─── EDIT POST MODAL ─── -->
+  <div class="modal-overlay" id="edit-post-overlay" onclick="closeEditModal(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Editar Post</div>
+        <button class="modal-close" onclick="closeEditModalDirect()">×</button>
+      </div>
+      <div class="modal-form">
+        <input type="hidden" id="edit-post-id">
+        <div class="form-group">
+          <label>Título</label>
+          <input type="text" id="edit-post-title"
+            style="padding:12px 16px;border:1.5px solid var(--border);border-radius:8px;font-family:Sora,sans-serif;font-size:.9rem;outline:none;background:var(--navy-mist);color:var(--text-primary);width:100%;transition:all .22s"
+            onfocus="this.style.borderColor='var(--navy)';this.style.background='white'"
+            onblur="this.style.borderColor='var(--border)';this.style.background='var(--navy-mist)'">
+        </div>
+        <div class="form-group">
+          <label>Conteúdo</label>
+          <textarea id="edit-post-content"
+            style="padding:12px 16px;border:1.5px solid var(--border);border-radius:8px;font-family:Sora,sans-serif;font-size:.9rem;outline:none;resize:none;min-height:120px;background:var(--navy-mist);color:var(--text-primary);width:100%;transition:all .22s"
+            onfocus="this.style.borderColor='var(--navy)';this.style.background='white'"
+            onblur="this.style.borderColor='var(--border)';this.style.background='var(--navy-mist)'"></textarea>
+        </div>
+        <div class="error-msg" id="edit-post-error"></div>
+        <div class="modal-footer">
+          <button class="btn-ghost" onclick="closeEditModalDirect()">Cancelar</button>
+          <button class="btn-primary" onclick="submitEditPost()">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── EDIT PROFILE MODAL ─── -->
+  <div class="modal-overlay" id="edit-profile-overlay" onclick="closeEditProfileModal(event)">
+    <div class="modal" id="edit-profile-modal">
+      <div class="modal-header">
+        <div class="modal-title">Editar Perfil</div>
+        <button class="modal-close" onclick="closeEditProfileModalDirect()">×</button>
+      </div>
+      <div class="modal-form">
+        <div class="inline-edit-row">
+          <div class="form-group">
+            <label>Usuário</label>
+            <input type="text" id="edit-username">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="edit-email">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Nova senha (deixe em branco para não alterar)</label>
+          <input type="password" id="edit-password" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label>Foto de perfil</label>
+          <div class="file-upload-area" onclick="document.getElementById('profile-pic-input').click()">
+            <svg xmlns="http://www.w3.org/2000/svg" style="width:28px;height:28px;color:var(--navy);opacity:.5"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            <p id="profile-upload-label">Clique para selecionar uma foto</p>
+            <input type="file" id="profile-pic-input" accept="image/*" style="display:none"
+              onchange="handleProfilePicSelect(this)">
+          </div>
+        </div>
+        <div class="error-msg" id="edit-profile-error"></div>
+        <div class="modal-footer">
+          <button class="btn-ghost" onclick="closeEditProfileModalDirect()">Cancelar</button>
+          <button class="btn-primary" onclick="submitEditProfile()">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/js/app.js"></script>
 </body>
+
 </html>
