@@ -168,7 +168,7 @@ async function handleLogin(e) {
     }
     state.token = token.trim();
     localStorage.setItem("dc_token", state.token);
-    await fetchCurrentUser(username);
+    await fetchCurrentUser();
     enterApp();
   } catch (err) {
     errEl.textContent = err.message;
@@ -234,28 +234,12 @@ async function handleRegister(e) {
   }
 }
 
-// After login, find the user object by username
-async function fetchCurrentUser(username) {
-  try {
-    const headers = state.token
-      ? { Authorization: `Bearer ${state.token}` }
-      : {};
-    const res = await fetch(`${API}/users`, { headers });
-    if (!res.ok) throw new Error();
-    const users = await res.json();
-    const list = Array.isArray(users)
-      ? users
-      : users.content || users.data || [];
-    const found = list.find((u) => u.username === username);
-    if (found) {
-      state.user = found;
-      localStorage.setItem("dc_user", JSON.stringify(found));
-    }
-  } catch {
-    // Non-critical: user can still use the app even if we can't fetch full profile
-    state.user = { username };
-    localStorage.setItem("dc_user", JSON.stringify(state.user));
-  }
+async function fetchCurrentUser() {
+  const res = await apiRequest("/users/me");
+  if (!res.ok) throw new Error();
+  const user = await res.json();
+  state.user = user;
+  localStorage.setItem("dc_user", JSON.stringify(user));
 }
 
 function enterAsGuest() {
