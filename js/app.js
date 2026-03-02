@@ -61,9 +61,14 @@ async function parseErrorMessage(
 }
 
 // ─── INIT ───
-window.addEventListener("DOMContentLoaded", () => {
-  if (state.token && state.user) {
-    enterApp();
+window.addEventListener("DOMContentLoaded", async () => {
+  if (state.token) {
+    try {
+      await fetchCurrentUser(); // valida token e carrega id real
+      enterApp();
+    } catch {
+      handleLogout();
+    }
   }
 });
 
@@ -97,15 +102,12 @@ function showPage(name) {
       switchToAuth();
       return;
     }
-    state.profileUserId = state.user.id;
+
     document.getElementById("page-profile").classList.add("active");
     document.getElementById("sidebar-profile-link").classList.add("active");
     document.getElementById("topbar-title").textContent = "Meu Perfil";
-    loadProfile(state.user.id, true);
-  } else if (name === "profile-other") {
-    document.getElementById("page-profile").classList.add("active");
-    document.getElementById("topbar-title").textContent = "Perfil";
-    loadProfile(state.profileUserId, false);
+
+    loadProfile(null, true); // ← não depende mais de id
   }
 }
 
@@ -238,6 +240,11 @@ async function fetchCurrentUser() {
   const res = await apiRequest("/users/me");
   if (!res.ok) throw new Error();
   const user = await res.json();
+
+  if (!user || !user.id) {
+    throw new Error("Usuário inválido retornado pelo backend.");
+  }
+
   state.user = user;
   localStorage.setItem("dc_user", JSON.stringify(user));
 }
@@ -872,12 +879,20 @@ async function loadProfile(userId, isOwn) {
       ${[1, 2, 3, 4, 5, 6].map(() => `<div class="skel" style="aspect-ratio:1;border-radius:14px"></div>`).join("")}
     </div>`;
   try {
-    const userRes = await fetch(`${API}/users/${userId}`);
-    if (!userRes.ok)
-      throw new Error(
-        `Não foi possível carregar o perfil (${userRes.status}).`,
-      );
-    const user = await userRes.json();
+    let user;
+
+    if (isOwn) {
+      const meRes = await apiRequest("/users/me");
+      if (!meRes.ok) throw new Error("Erro ao carregar perfil.");
+      user = await meRes.json();
+    } else {
+      const userRes = await fetch(`${API}/users/${userId}`);
+      if (!userRes.ok)
+        throw new Error(
+          `Não foi possível carregar o perfil (${userRes.status}).`,
+        );
+      user = await userRes.json();
+    }
 
     // Fetch all posts and filter by author
     const allPostsRes = await fetch(`${API}/posts`);
@@ -1047,7 +1062,7 @@ async function submitEditProfile() {
         showToast("Perfil salvo, mas houve um erro ao enviar a foto.", "info");
     }
     // Refresh user data
-    const updRes = await fetch(`${API}/users/${state.user.id}`);
+    await fetchCurrentUser();
     if (updRes.ok) {
       const updUser = await updRes.json();
       state.user = updUser;
