@@ -108,6 +108,12 @@ function showPage(name) {
     document.getElementById("topbar-title").textContent = "Meu Perfil";
 
     loadProfile(null, true);
+  } else if (name === "profile-other") {
+    document.getElementById("page-profile").classList.add("active");
+    document.getElementById("topbar-title").textContent = "Perfil";
+
+    // usa o state.profileUserId que você já setou
+    loadProfile(state.profileUserId, false);
   }
 }
 
