@@ -371,8 +371,8 @@ function renderPostCard(p) {
   const avatarHtml = p.profileImgUrl
     ? `<img src="${esc(p.profileImgUrl)}" alt="${esc(p.authorId)}">`
     : initials;
-  const timeStr = p.createdAt
-    ? new Date(p.createdAt).toLocaleDateString("pt-BR", {
+  const timeStr = p.creationDate
+    ? new Date(p.creationDate).toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -401,7 +401,7 @@ function renderPostCard(p) {
     esc((p.content || "").slice(0, 300)) +
     ((p.content || "").length > 300 ? "..." : "");
   return `
-    <div class="post-card" id="pcard-'${p.postId}'">
+    <div class="post-card" id="pcard-'${p.postId}'" onclick="openPost('${p.postId}')">
       <div class="post-header">
         <div class="post-avatar" onclick="viewUserProfile(event, '${esc(p.author)}')" style="cursor:pointer" title="Ver perfil de ${esc(p.author)}">${avatarHtml}</div>
         <div class="post-meta">
@@ -430,7 +430,6 @@ function filterFeed(q) {
   const lower = q.toLowerCase();
   const filtered = state.posts.filter(
     (p) =>
-      (p.title || "").toLowerCase().includes(lower) ||
       (p.content || "").toLowerCase().includes(lower) ||
       (p.author || "").toLowerCase().includes(lower),
   );
@@ -484,7 +483,7 @@ async function openPost(id) {
           <div class="post-avatar" onclick="viewUserProfile(event,'${esc(post.author)}')" style="cursor:pointer">${post.profileImgUrl ? `<img src="${esc(post.profileImgUrl)}">` : avatarInit}</div>
           <div class="post-meta">
             <div class="post-author" onclick="viewUserProfile(event,'${esc(post.author)}')" style="cursor:pointer">${esc(post.author) || "Usuário"}</div>
-            <div class="post-time">${post.createdAt ? new Date(post.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) : ""}</div>
+            <div class="post-time">${post.creationDate ? new Date(post.creationDate).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) : ""}</div>
           </div>
           ${
             isOwn
@@ -531,24 +530,37 @@ async function openPost(id) {
 async function renderComments(comments) {
   const list = document.getElementById("comments-list");
   if (!list) return;
+
   if (!comments.length) {
-    list.innerHTML = `<div class="empty-feed" style="padding:32px"><p>Sem comentários ainda.</p></div>`;
+    list.innerHTML = `
+      <div class="empty-feed" style="padding:32px">
+        <p>Sem comentários ainda.</p>
+      </div>`;
     return;
   }
-  // Fetch replies for each comment concurrently
-  const withReplies = await Promise.all(
-    comments.map(async (c) => {
-      try {
-        const r = await fetch(`${API}/comments/${c.commentId}/replies`);
-        if (!r.ok) return { ...c, replies: [] };
+
+  list.innerHTML = "";
+
+  // Apenas comentários raiz
+  const rootComments = comments.filter((c) => !c.parentId);
+
+  for (const comment of rootComments) {
+    let replies = [];
+
+    try {
+      const r = await fetch(`${API}/comments/${comment.commentId}/replies`);
+      if (r.ok) {
         const raw = await r.json();
-        return { ...c, replies: Array.isArray(raw) ? raw : raw.content || [] };
-      } catch {
-        return { ...c, replies: [] };
+        replies = Array.isArray(raw) ? raw : raw.content || [];
       }
-    }),
-  );
-  list.innerHTML = withReplies.map((c) => renderCommentCard(c)).join("");
+    } catch (e) {
+      replies = [];
+    }
+
+    comment.replies = replies;
+    console.log("Comment:", comment.commentId, "Replies:", replies);
+    list.innerHTML += renderCommentCard(comment);
+  }
 }
 
 function renderCommentCard(c) {
@@ -569,7 +581,7 @@ function renderCommentCard(c) {
       return `<div class="reply-card">
       <div class="comment-header">
         <div class="comment-avatar">${ra}</div>
-        <div><div class="comment-author">${esc(r.author) || "Usuário"}</div><div class="comment-time">${r.createdAt ? new Date(r.createdAt).toLocaleDateString("pt-BR") : ""}</div></div>
+        <div><div class="comment-author">${esc(r.author) || "Usuário"}</div><div class="comment-time">${r.creationDate ? new Date(r.creationDate).toLocaleDateString("pt-BR") : ""}</div></div>
         ${isOwnR ? `<button class="btn-danger" style="margin-left:auto;padding:5px 10px;font-size:.72rem" onclick="deleteComment('${r.commentId}')">Excluir</button>` : ""}
       </div>
       <div class="comment-body">${esc(r.content)}</div>
@@ -581,8 +593,8 @@ function renderCommentCard(c) {
     : "";
   const replyForm = state.user
     ? `
-    <div class="reply-form" id="reply-form-'${c.commentId}'" style="display:none">
-      <textarea class="reply-input" id="reply-input-'${c.commentId}'" placeholder="Escreva uma resposta..."></textarea>
+    <div class="reply-form" id="reply-form-${c.commentId}" style="display:none">
+      <textarea class="reply-input" id="reply-input-${c.commentId}" placeholder="Escreva uma resposta..."></textarea>
       <div class="reply-form-footer">
         <button class="btn-ghost" style="padding:7px 14px;font-size:.8rem" onclick="toggleReplyForm('${c.commentId}')">Cancelar</button>
         <button class="btn-primary" style="padding:7px 14px;font-size:.8rem" onclick="submitReply('${c.commentId}')">Responder</button>
@@ -595,10 +607,10 @@ function renderCommentCard(c) {
       ? `<div class="replies-container">${repliesHtml}</div>`
       : "";
   return `
-    <div class="comment-card" id="comment-'${c.commentId}'">
+    <div class="comment-card" id="comment-${c.commentId}">
       <div class="comment-header">
         <div class="comment-avatar">${avatarHtml}</div>
-        <div style="flex:1"><div class="comment-author">${esc(c.author) || "Usuário"}</div><div class="comment-time">${c.createdAt ? new Date(c.createdAt).toLocaleDateString("pt-BR") : ""}</div></div>
+        <div style="flex:1"><div class="comment-author">${esc(c.author) || "Usuário"}</div><div class="comment-time">${c.creationDate ? new Date(c.creationDate).toLocaleDateString("pt-BR") : ""}</div></div>
         ${isOwn ? `<button class="btn-danger" style="padding:5px 10px;font-size:.72rem" onclick="deleteComment('${c.commentId}')">Excluir</button>` : ""}
       </div>
       <div class="comment-body">${esc(c.content)}</div>
@@ -655,7 +667,7 @@ async function submitComment() {
 
 async function submitReply(commentId) {
   if (!state.user) return;
-  const input = document.getElementById(`reply-input-'${commentId}'`);
+  const input = document.getElementById(`reply-input-${commentId}`);
   const content = input.value.trim();
   if (!content) {
     showToast("Escreva algo antes de responder.", "info");
@@ -668,7 +680,7 @@ async function submitReply(commentId) {
       body: JSON.stringify({
         content,
         postId: state.currentPostId,
-        parentCommentId: commentId,
+        parentId: commentId,
       }),
     });
     if (!res.ok) {
@@ -792,6 +804,7 @@ async function submitNewPost() {
         '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Publicar';
     }
   }
+  loadFeed();
 }
 
 // ─── EDIT POST ──
