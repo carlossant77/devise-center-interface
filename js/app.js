@@ -368,8 +368,8 @@ function renderPostCard(p) {
     state.user &&
     (state.user.userId === p.userId || state.user.username === p.author);
   const initials = p.author ? p.author.charAt(0).toUpperCase() : "?";
-  const avatarHtml = p.authorPicture
-    ? `<img src="${esc(p.authorPicture)}" alt="${esc(p.author)}">`
+  const avatarHtml = p.profileImgUrl
+    ? `<img src="${esc(p.profileImgUrl)}" alt="${esc(p.authorId)}">`
     : initials;
   const timeStr = p.createdAt
     ? new Date(p.createdAt).toLocaleDateString("pt-BR", {
@@ -381,13 +381,13 @@ function renderPostCard(p) {
   const optionsMenu = isOwn
     ? `
     <div style="position:relative">
-      <button class="post-options" onclick="toggleDropdown(event, 'dd-${p.id}')">⋯</button>
-      <div class="dropdown-menu" id="dd-${p.id}">
-        <div class="dropdown-item" onclick="openEditModal(${p.id})">
+      <button class="post-options" onclick="toggleDropdown(event, 'dd-${p.postId}')">⋯</button>
+      <div class="dropdown-menu" id="dd-${p.postId}">
+        <div class="dropdown-item" onclick="openEditModal('${p.postId}')">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8z"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           Editar
         </div>
-        <div class="dropdown-item danger" onclick="deletePost(${p.id})">
+        <div class="dropdown-item danger" onclick="deletePost('${p.postId})'">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
           Excluir
         </div>
@@ -401,7 +401,7 @@ function renderPostCard(p) {
     esc((p.content || "").slice(0, 300)) +
     ((p.content || "").length > 300 ? "..." : "");
   return `
-    <div class="post-card" id="pcard-${p.id}">
+    <div class="post-card" id="pcard-'${p.postId}'">
       <div class="post-header">
         <div class="post-avatar" onclick="viewUserProfile(event, '${esc(p.author)}')" style="cursor:pointer" title="Ver perfil de ${esc(p.author)}">${avatarHtml}</div>
         <div class="post-meta">
@@ -410,15 +410,15 @@ function renderPostCard(p) {
         </div>
         ${optionsMenu}
       </div>
-      ${p.title ? `<div class="post-title" onclick="openPost(${p.id})">${esc(p.title)}</div>` : ""}
+      ${p.title ? `<div class="post-title" onclick="openPost('${p.postId}')">${esc(p.title)}</div>` : ""}
       ${imageHtml}
-      <div class="post-body" onclick="openPost(${p.id})">${contentPreview}</div>
+      <div class="post-body" onclick="openPost('${p.postId}')">${contentPreview}</div>
       <div class="post-footer">
-        <button class="post-action" onclick="openPost(${p.id})">
+        <button class="post-action" onclick="openPost('${p.postId}')">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Comentários
         </button>
-        <button class="post-action" onclick="openPost(${p.id})">
+        <button class="post-action" onclick="openPost('${p.postId}')">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           Ver post
         </button>
@@ -481,7 +481,7 @@ async function openPost(id) {
     container.innerHTML = `
       <div class="post-detail-card">
         <div class="post-header" style="margin-bottom:20px">
-          <div class="post-avatar" onclick="viewUserProfile(event,'${esc(post.author)}')" style="cursor:pointer">${post.authorPicture ? `<img src="${esc(post.authorPicture)}">` : avatarInit}</div>
+          <div class="post-avatar" onclick="viewUserProfile(event,'${esc(post.author)}')" style="cursor:pointer">${post.profileImgUrl ? `<img src="${esc(post.profileImgUrl)}">` : avatarInit}</div>
           <div class="post-meta">
             <div class="post-author" onclick="viewUserProfile(event,'${esc(post.author)}')" style="cursor:pointer">${esc(post.author) || "Usuário"}</div>
             <div class="post-time">${post.createdAt ? new Date(post.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) : ""}</div>
@@ -489,7 +489,7 @@ async function openPost(id) {
           ${
             isOwn
               ? `<div style="display:flex;gap:8px">
-            <button class="btn-ghost" style="padding:8px 14px;font-size:.8rem" onclick="openEditModal(${post.id})">Editar</button>
+            <button class="btn-ghost" style="padding:8px 14px;font-size:.8rem" onclick="openEditModal('${post.postId}')">Editar</button>
             <button class="btn-danger" onclick="deletePost(${post.id})">Excluir</button>
           </div>`
               : ""
@@ -739,7 +739,6 @@ function handleFileSelect(input) {
   }
 }
 async function submitNewPost() {
-  const title = document.getElementById("new-post-title").value.trim();
   const content = document.getElementById("new-post-content").value.trim();
   const errEl = document.getElementById("post-error");
   errEl.classList.remove("show");
@@ -755,10 +754,24 @@ async function submitNewPost() {
   }
   try {
     const fd = new FormData();
-    if (title) fd.append("title", title);
-    fd.append("content", content);
-    if (state.selectedPostImage) fd.append("image", state.selectedPostImage);
-    const res = await apiRequest("/posts", { method: "POST", body: fd });
+
+    const payload = {
+      content: content,
+    };
+
+    fd.append(
+      "data",
+      new Blob([JSON.stringify(payload)], { type: "application/json" }),
+    );
+
+    if (state.selectedPostImage) {
+      fd.append("file", state.selectedPostImage);
+    }
+
+    const res = await apiRequest("/posts", {
+      method: "POST",
+      body: fd,
+    });
     if (!res.ok) {
       const msg = await parseErrorMessage(
         res,
@@ -796,7 +809,6 @@ async function openEditModal(id) {
     return;
   }
   document.getElementById("edit-post-id").value = id;
-  document.getElementById("edit-post-title").value = post.title || "";
   document.getElementById("edit-post-content").value = post.content || "";
   document.getElementById("edit-post-error").classList.remove("show");
   document.getElementById("edit-post-overlay").classList.add("open");
@@ -810,33 +822,52 @@ function closeEditModalDirect() {
 }
 async function submitEditPost() {
   const id = document.getElementById("edit-post-id").value;
-  const title = document.getElementById("edit-post-title").value.trim();
   const content = document.getElementById("edit-post-content").value.trim();
   const errEl = document.getElementById("edit-post-error");
+
   errEl.classList.remove("show");
+
   if (!content) {
     errEl.textContent = "O conteúdo é obrigatório.";
     errEl.classList.add("show");
     return;
   }
+
   const saveBtn = document.querySelector("#edit-post-overlay .btn-primary");
   if (saveBtn) {
     saveBtn.disabled = true;
     saveBtn.textContent = "Salvando...";
   }
+
   try {
+    const fd = new FormData();
+
+    // JSON como application/json
+    fd.append(
+      "data",
+      new Blob([JSON.stringify({ content: content })], {
+        type: "application/json",
+      }),
+    );
+
+    // imagem opcional (mesmo padrão do create)
+    if (state.selectedPostImage) {
+      fd.append("file", state.selectedPostImage);
+    }
+
     const res = await apiRequest(`/posts/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, content }),
+      body: fd,
     });
+
     if (!res.ok) {
       const msg = await parseErrorMessage(res, "Erro ao editar post.");
       throw new Error(msg);
     }
+
     closeEditModalDirect();
     showToast("Post atualizado!", "success");
-    // Refresh feed or reload current post
+
     if (document.getElementById("page-post").classList.contains("active")) {
       openPost(id);
     } else {
@@ -866,6 +897,11 @@ async function deletePost(id) {
   } catch (err) {
     showToast(err.message, "error");
   }
+}
+
+function handleEditPostImage(event) {
+  const file = event.target.files[0] || null;
+  state.selectedPostImage = file;
 }
 
 // ─── PROFILE ───
