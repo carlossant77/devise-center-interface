@@ -107,7 +107,7 @@ function showPage(name) {
     document.getElementById("sidebar-profile-link").classList.add("active");
     document.getElementById("topbar-title").textContent = "Meu Perfil";
 
-    loadProfile(null, true); // ← não depende mais de id
+    loadProfile(null, true);
   }
 }
 
@@ -300,8 +300,8 @@ function updateSidebarUser() {
   if (u) {
     nameEl.textContent = u.username;
     emailEl.textContent = u.email || "";
-    if (u.profilePicture) {
-      avatarEl.innerHTML = `<img src="${esc(u.profilePicture)}" alt="${esc(u.username)}">`;
+    if (u.pictureUrl) {
+      avatarEl.innerHTML = `<img src="${esc(u.pictureUrl)}" alt="${esc(u.username)}">`;
     } else {
       avatarEl.textContent = u.username.charAt(0).toUpperCase();
     }
@@ -366,7 +366,7 @@ function renderFeed(posts) {
 function renderPostCard(p) {
   const isOwn =
     state.user &&
-    (state.user.id === p.userId || state.user.username === p.author);
+    (state.user.userId === p.userId || state.user.username === p.author);
   const initials = p.author ? p.author.charAt(0).toUpperCase() : "?";
   const avatarHtml = p.authorPicture
     ? `<img src="${esc(p.authorPicture)}" alt="${esc(p.author)}">`
@@ -472,7 +472,8 @@ async function openPost(id) {
 
     const isOwn =
       state.user &&
-      (state.user.id === post.userId || state.user.username === post.author);
+      (state.user.userId === post.userId ||
+        state.user.username === post.author);
     const imgHtml = post.imageUrl
       ? `<img src="${esc(post.imageUrl)}" alt="" class="post-image" onerror="this.style.display='none'">`
       : "";
@@ -553,7 +554,7 @@ async function renderComments(comments) {
 function renderCommentCard(c) {
   const isOwn =
     state.user &&
-    (state.user.id === c.userId || state.user.username === c.author);
+    (state.user.userId === c.userId || state.user.username === c.author);
   const initials = (c.author || "?").charAt(0).toUpperCase();
   const avatarHtml = c.authorPicture
     ? `<img src="${esc(c.authorPicture)}">`
@@ -564,7 +565,7 @@ function renderCommentCard(c) {
       const ra = r.authorPicture ? `<img src="${esc(r.authorPicture)}">` : ri;
       const isOwnR =
         state.user &&
-        (state.user.username === r.author || state.user.id === r.userId);
+        (state.user.username === r.author || state.user.userId === r.userId);
       return `<div class="reply-card">
       <div class="comment-header">
         <div class="comment-avatar">${ra}</div>
@@ -906,8 +907,8 @@ async function loadProfile(userId, isOwn) {
     );
 
     const initials = (user.username || "?").charAt(0).toUpperCase();
-    const avatarHtml = user.profilePicture
-      ? `<img src="${user.profilePicture}" alt="${user.username}">`
+    const avatarHtml = user.pictureUrl
+      ? `<img src="${user.pictureUrl}" alt="${user.username}">`
       : initials;
     const avatarEditBtn = isOwn
       ? `<div class="profile-avatar-edit" onclick="openEditProfileModal()" title="Alterar foto">✎</div>`
@@ -1028,54 +1029,65 @@ async function submitEditProfile() {
   const email = document.getElementById("edit-email").value.trim();
   const password = document.getElementById("edit-password").value;
   const errEl = document.getElementById("edit-profile-error");
+
   errEl.classList.remove("show");
+
   if (!username || !email) {
     errEl.textContent = "Usuário e email são obrigatórios.";
     errEl.classList.add("show");
     return;
   }
+
   const saveBtn = document.querySelector("#edit-profile-modal .btn-primary");
-  if (saveBtn) {
-    saveBtn.disabled = true;
-    saveBtn.textContent = "Salvando...";
-  }
+
   try {
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Salvando...";
+    }
+
+    await fetchCurrentUser();
+
+    const userId = state.user?.userId;
+    if (!userId) {
+      throw new Error("Usuário inválido.");
+    }
+
     const body = { username, email };
     if (password) body.password = password;
-    const res = await apiRequest(`/users/${state.user.id}`, {
+
+    const res = await apiRequest(`/users/${userId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
+
     if (!res.ok) {
       const msg = await parseErrorMessage(res, "Erro ao atualizar perfil.");
       throw new Error(msg);
     }
-    // Upload profile picture if selected
+
     if (state.selectedProfilePic) {
       const fd = new FormData();
-      fd.append("image", state.selectedProfilePic);
-      const picRes = await apiRequest(`/users/${state.user.id}/pictures`, {
+      fd.append("file", state.selectedProfilePic);
+
+      const picRes = await apiRequest(`/users/${userId}/pictures`, {
         method: "PUT",
         body: fd,
       });
-      if (!picRes.ok)
-        showToast("Perfil salvo, mas houve um erro ao enviar a foto.", "info");
+
+      if (!picRes.ok) {
+        showToast("Perfil salvo, mas houve erro ao enviar a foto.", "info");
+      }
     }
-    // Refresh user data
+
     await fetchCurrentUser();
-    if (updRes.ok) {
-      const updUser = await updRes.json();
-      state.user = updUser;
-      localStorage.setItem("dc_user", JSON.stringify(updUser));
-    } else {
-      state.user = { ...state.user, username, email };
-      localStorage.setItem("dc_user", JSON.stringify(state.user));
-    }
+
     updateSidebarUser();
     closeEditProfileModalDirect();
     showToast("Perfil atualizado com sucesso!", "success");
-    loadProfile(state.user.id, true);
+
+    loadProfile(userId, true);
   } catch (err) {
     errEl.textContent = err.message;
     errEl.classList.add("show");
@@ -1086,7 +1098,6 @@ async function submitEditProfile() {
     }
   }
 }
-
 // ─── TOAST ───
 function showToast(msg, type = "info") {
   const container = document.getElementById("toast-container");
