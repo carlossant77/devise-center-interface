@@ -788,7 +788,7 @@ async function submitNewPost() {
   }
 }
 
-// ─── EDIT POST ───
+// ─── EDIT POST ──
 async function openEditModal(id) {
   // Try to find in state first, fallback to API
   let post = state.posts.find((p) => p.id === id);
