@@ -9,6 +9,11 @@ let state = {
   sidebarCollapsed: false,
   selectedPostImage: null,
   selectedProfilePic: null,
+  currentPage: 0,
+  totalPages: 0,
+  pageSize: 10,
+  loadingFeed: false,
+  feedScrollY: 0,
 };
 
 // ─── HELPER: Escape HTML to prevent XSS ───
@@ -81,6 +86,9 @@ function showView(id) {
 }
 
 function showPage(name) {
+  if (document.getElementById("page-home").classList.contains("active")) {
+    state.feedScrollY = window.scrollY;
+  }
   document
     .querySelectorAll(".page")
     .forEach((p) => p.classList.remove("active"));
@@ -92,7 +100,18 @@ function showPage(name) {
     document.getElementById("page-home").classList.add("active");
     document.querySelector(".nav-item").classList.add("active");
     document.getElementById("topbar-title").textContent = "Feed";
-    loadFeed();
+
+    if (!state.posts || state.posts.length === 0) {
+      state.currentPage = 0;
+      loadFeed(0, false);
+    } else {
+      renderFeed(state.posts);
+      renderLoadMoreButton();
+
+      setTimeout(() => {
+        window.scrollTo(0, state.feedScrollY || 0);
+      }, 50);
+    }
   } else if (name === "post") {
     document.getElementById("page-post").classList.add("active");
     document.getElementById("topbar-title").textContent = "Post";
@@ -328,36 +347,65 @@ function toggleSidebar() {
 }
 
 // ─── FEED ───
-async function loadFeed() {
+async function loadFeed(page = 0, append = false) {
+  if (state.loadingFeed) return;
+  state.loadingFeed = true;
+
   const container = document.getElementById("feed-container");
-  container.innerHTML = `
-    <div class="loading-skeleton">
-      <div class="skel-header"><div class="skel skel-circle"></div><div class="skel-lines"><div class="skel" style="height:14px;width:60%"></div><div class="skel" style="height:11px;width:40%"></div></div></div>
-      <div class="skel" style="height:18px;width:80%"></div>
-      <div class="skel" style="height:12px;width:100%"></div>
-      <div class="skel" style="height:12px;width:90%"></div>
-    </div>
-    <div class="loading-skeleton">
-      <div class="skel-header"><div class="skel skel-circle"></div><div class="skel-lines"><div class="skel" style="height:14px;width:50%"></div><div class="skel" style="height:11px;width:35%"></div></div></div>
-      <div class="skel" style="height:18px;width:70%"></div>
-      <div class="skel" style="height:12px;width:100%"></div>
-      <div class="skel" style="height:12px;width:75%"></div>
-    </div>`;
-  try {
-    const res = await fetch(`${API}/posts`);
-    if (!res.ok) throw new Error(`Erro ${res.status}`);
-    const data = await res.json();
-    // Handle both array response and paginated response
-    state.posts = Array.isArray(data) ? data : data.content || data.data || [];
-    renderFeed(state.posts);
-  } catch (err) {
+
+  if (!append) {
     container.innerHTML = `
-      <div class="empty-feed">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <p>Não foi possível carregar o feed.<br><small style="font-size:.75rem;opacity:.7">${err.message}</small></p>
-        <button class="btn-ghost" style="margin-top:16px;padding:9px 20px;font-size:.83rem" onclick="loadFeed()">Tentar novamente</button>
+      <div class="loading-skeleton">
+        <div class="skel-header">
+          <div class="skel skel-circle"></div>
+          <div class="skel-lines">
+            <div class="skel" style="height:14px;width:60%"></div>
+            <div class="skel" style="height:11px;width:40%"></div>
+          </div>
+        </div>
+        <div class="skel" style="height:18px;width:80%"></div>
       </div>`;
   }
+
+  try {
+    const res = await fetch(`${API}/posts?page=${page}&size=${state.pageSize}`);
+
+    if (!res.ok) throw new Error(`Erro ${res.status}`);
+
+    const data = await res.json();
+
+    const posts = data.content || [];
+
+    state.currentPage = data.number;
+    state.totalPages = data.totalPages;
+
+    if (append) {
+      state.posts = [...state.posts, ...posts];
+      appendPosts(posts);
+    } else {
+      state.posts = posts;
+      renderFeed(state.posts);
+    }
+
+    renderLoadMoreButton();
+  } catch (err) {
+    if (!append) {
+      container.innerHTML = `
+        <div class="empty-feed">
+          <p>Erro ao carregar feed.</p>
+        </div>`;
+    }
+  }
+
+  state.loadingFeed = false;
+}
+
+function appendPosts(posts) {
+  const container = document.getElementById("feed-container");
+  container.insertAdjacentHTML(
+    "beforeend",
+    posts.map((p) => renderPostCard(p)).join(""),
+  );
 }
 
 function renderFeed(posts) {
@@ -367,6 +415,29 @@ function renderFeed(posts) {
     return;
   }
   container.innerHTML = posts.map((p) => renderPostCard(p)).join("");
+}
+function renderLoadMoreButton() {
+  const container = document.getElementById("feed-container");
+
+  const oldBtn = document.getElementById("load-more-btn");
+  if (oldBtn) oldBtn.remove();
+
+  if (state.currentPage + 1 >= state.totalPages) return;
+
+  container.insertAdjacentHTML(
+    "beforeend",
+    `
+    <div style="text-align:center;margin:20px 0">
+      <button id="load-more-btn" class="btn-primary" onclick="loadMore()">
+        Carregar mais
+      </button>
+    </div>`,
+  );
+}
+
+function loadMore() {
+  if (state.currentPage + 1 >= state.totalPages) return;
+  loadFeed(state.currentPage + 1, true);
 }
 
 function renderPostCard(p) {
