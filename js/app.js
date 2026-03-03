@@ -812,7 +812,6 @@ function closeNewPostModal(e) {
 }
 function closeNewPostModalDirect() {
   document.getElementById("new-post-overlay").classList.remove("open");
-  document.getElementById("new-post-title").value = "";
   document.getElementById("new-post-content").value = "";
   document.getElementById("post-error").classList.remove("show");
   state.selectedPostImage = null;
